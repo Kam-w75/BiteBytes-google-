@@ -1,0 +1,8 @@
+{
+  "name": "Chef's Edge Recipe Costing",
+  "description": "A professional recipe costing application for chefs and bakers with integrated voice commands and invoice scanning powered by Gemini Vision. Streamline your kitchen operations by easily tracking ingredient costs, managing recipes, and generating detailed cost estimates.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
