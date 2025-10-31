@@ -11,7 +11,7 @@ const FilterButton: React.FC<{ label: string; isActive: boolean; onClick: () => 
     <button
         onClick={onClick}
         className={`px-3 py-1 text-sm font-medium rounded-full transition-colors ${
-            isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            isActive ? 'bg-[#FF6B6B] text-black font-semibold' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
         }`}
     >
         {label}
@@ -25,10 +25,10 @@ const PriceChangeCard: React.FC<{ item: PriceChangeItem }> = ({ item }) => {
     
     return (
         <div className="flex justify-between items-center py-2">
-            <p className="font-medium text-gray-800">{item.ingredientName}</p>
+            <p className="font-medium text-gray-200">{item.ingredientName}</p>
             <div className="flex items-center space-x-3">
-                <p className="text-sm text-gray-500">${item.oldPrice.toFixed(2)} → <span className="font-bold text-gray-900">${item.newPrice.toFixed(2)}</span></p>
-                <span className={`flex items-center text-sm font-semibold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
+                <p className="text-sm text-gray-400">${item.oldPrice.toFixed(2)} → <span className="font-bold text-gray-100">${item.newPrice.toFixed(2)}</span></p>
+                <span className={`flex items-center text-sm font-semibold ${isIncrease ? 'text-red-400' : 'text-green-400'}`}>
                     {isIncrease ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
                     {percentChange.toFixed(0)}%
                 </span>
@@ -70,16 +70,16 @@ export const PriceChangeHistory: React.FC = () => {
     const allCategories: CategoryType[] = ['all', 'Meat', 'Produce', 'Dairy', 'Dry Goods', 'Spices', 'Canned', 'Beverages', 'Other'];
 
     return (
-        <div className="bg-gray-50/50 min-h-screen">
+        <div className="bg-[#1E1E1E] min-h-screen">
             <Header
                 title="Price Change History"
                 subtitle="Track all supplier price movements over time."
             />
             <div className="p-6">
                 {/* Filters */}
-                <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="mb-8 p-4 bg-[#2C2C2C] rounded-lg shadow-sm border border-[#444444] space-y-4">
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm font-semibold text-gray-600">Show:</span>
+                        <span className="text-sm font-semibold text-gray-400">Show:</span>
                         <div className="flex space-x-2">
                             <FilterButton label="All Changes" isActive={filterType === 'all'} onClick={() => setFilterType('all')} />
                             <FilterButton label="Increases Only" isActive={filterType === 'increases'} onClick={() => setFilterType('increases')} />
@@ -88,15 +88,15 @@ export const PriceChangeHistory: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          <div>
-                            <label htmlFor="supplier-filter" className="block text-sm font-medium text-gray-700">Supplier</label>
-                            <select id="supplier-filter" value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <label htmlFor="supplier-filter" className="block text-sm font-medium text-gray-300">Supplier</label>
+                            <select id="supplier-filter" value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 bg-transparent border-[#444444] focus:outline-none focus:ring-[#FF6B6B] focus:border-[#FF6B6B] sm:text-sm rounded-md">
                                 <option value="all">All Suppliers</option>
                                 {vendors.map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
                             </select>
                         </div>
                          <div>
-                            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700">Category</label>
-                            <select id="category-filter" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as CategoryType)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-300">Category</label>
+                            <select id="category-filter" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value as CategoryType)} className="mt-1 block w-full pl-3 pr-10 py-2 bg-transparent border-[#444444] focus:outline-none focus:ring-[#FF6B6B] focus:border-[#FF6B6B] sm:text-sm rounded-md">
                                 {allCategories.map(c => <option key={c} value={c}>{c === 'all' ? 'All Categories' : c}</option>)}
                             </select>
                         </div>
@@ -106,30 +106,30 @@ export const PriceChangeHistory: React.FC = () => {
                 {/* Timeline */}
                 <div className="relative pl-6">
                     {/* Vertical line */}
-                    <div className="absolute left-6 top-1 bottom-1 w-0.5 bg-gray-200" aria-hidden="true"></div>
+                    <div className="absolute left-6 top-1 bottom-1 w-0.5 bg-gray-700" aria-hidden="true"></div>
                     
                     <div className="space-y-8">
                         {filteredHistory.length > 0 ? (
                             filteredHistory.map((entry, index) => (
                                 <div key={index} className="relative">
-                                    <div className="absolute -left-1.5 top-1 h-3 w-3 bg-blue-600 rounded-full border-2 border-white"></div>
+                                    <div className="absolute -left-1.5 top-1 h-3 w-3 bg-[#FF6B6B] rounded-full border-2 border-[#1E1E1E]"></div>
                                     <div className="ml-6">
-                                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                                            <div className="p-4 border-b border-gray-200 bg-gray-50/70">
+                                        <div className="bg-[#2C2C2C] rounded-lg shadow-sm border border-[#444444] overflow-hidden">
+                                            <div className="p-4 border-b border-[#444444] bg-[#1E1E1E]">
                                                 <div className="flex justify-between items-center">
-                                                    <p className="font-bold text-gray-800">{entry.date}</p>
-                                                    <p className="text-sm font-semibold text-gray-600">{entry.supplier}</p>
+                                                    <p className="font-bold text-gray-200">{entry.date}</p>
+                                                    <p className="text-sm font-semibold text-gray-300">{entry.supplier}</p>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mt-1">{entry.items.length} item{entry.items.length > 1 && 's'} changed price</p>
+                                                <p className="text-sm text-gray-400 mt-1">{entry.items.length} item{entry.items.length > 1 && 's'} changed price</p>
                                             </div>
-                                            <div className="p-4 divide-y divide-gray-100">
+                                            <div className="p-4 divide-y divide-gray-700">
                                                 {entry.items.map((item, itemIndex) => (
                                                     <PriceChangeCard key={itemIndex} item={item} />
                                                 ))}
                                             </div>
-                                            <div className="p-4 bg-gray-50/70 flex justify-between items-center">
-                                                <p className="text-xs font-medium text-gray-500">This affected {entry.affectedRecipes} recipes</p>
-                                                <button className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">
+                                            <div className="p-4 bg-[#1E1E1E] flex justify-between items-center">
+                                                <p className="text-xs font-medium text-gray-400">This affected {entry.affectedRecipes} recipes</p>
+                                                <button className="px-3 py-1.5 text-xs font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
                                                     Review Impact
                                                 </button>
                                             </div>

@@ -22,13 +22,13 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
           <div className="mt-10 flex flex-col items-center justify-center gap-y-6">
             <button
               onClick={onComplete}
-              className="rounded-md bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transform transition-transform duration-200 hover:scale-105"
+              className="rounded-md bg-[#FF6B6B] px-8 py-4 text-lg font-semibold text-black shadow-sm hover:bg-[#E85A5A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B6B] transform transition-transform duration-200 hover:scale-105"
             >
               Get Started - It's Free
             </button>
             <p className="text-sm">
               Already have an account?{' '}
-              <a href="#" className="font-semibold text-blue-400 hover:text-blue-300">
+              <a href="#" className="font-semibold text-[#FF6B6B] hover:text-[#E85A5A]">
                 Sign in
               </a>
             </p>

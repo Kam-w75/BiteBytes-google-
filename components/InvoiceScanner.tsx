@@ -26,9 +26,9 @@ const getConfidenceColor = (score?: number) => {
 
 const getConfidenceTextColor = (score?: number) => {
   if (score === undefined) return 'text-gray-400';
-  if (score >= 0.9) return 'text-green-600';
-  if (score >= 0.7) return 'text-yellow-600';
-  return 'text-red-600';
+  if (score >= 0.9) return 'text-green-400';
+  if (score >= 0.7) return 'text-yellow-400';
+  return 'text-red-400';
 };
 
 
@@ -116,7 +116,7 @@ export const InvoiceScanner: React.FC = () => {
       />
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white">
+          <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center bg-[#2C2C2C]">
             <input
               type="file"
               ref={fileInputRef}
@@ -128,12 +128,12 @@ export const InvoiceScanner: React.FC = () => {
             {imagePreview ? (
               <img src={imagePreview} alt="Invoice preview" className="max-h-64 mx-auto mb-4 rounded-lg shadow-md" />
             ) : (
-                <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <UploadIcon className="mx-auto h-12 w-12 text-gray-500" />
             )}
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
+            <h3 className="mt-2 text-sm font-medium text-gray-100">
               {isLoading ? "Analyzing Invoice..." : "Upload an invoice"}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-400">
               Use your camera or upload a file.
             </p>
             <div className="mt-6">
@@ -141,7 +141,7 @@ export const InvoiceScanner: React.FC = () => {
                 type="button"
                 onClick={handleUploadClick}
                 disabled={isLoading}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-md shadow-sm text-black bg-[#FF6B6B] hover:bg-[#E85A5A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6B6B] disabled:bg-gray-500"
               >
                 {isLoading ? <ArrowPathIcon className="animate-spin -ml-1 mr-2 h-5 w-5" /> : <SparklesIcon className="-ml-1 mr-2 h-5 w-5" />}
                 {isLoading ? 'Processing...' : 'Scan with Gemini'}
@@ -150,14 +150,14 @@ export const InvoiceScanner: React.FC = () => {
           </div>
           
           {error && (
-            <div className="mt-6 rounded-md bg-red-50 p-4">
+            <div className="mt-6 rounded-md bg-red-900/50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <XCircleIcon className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <div className="mt-2 text-sm text-red-700">
+                  <h3 className="text-sm font-medium text-red-300">Error</h3>
+                  <div className="mt-2 text-sm text-red-300">
                     <p>{error}</p>
                   </div>
                 </div>
@@ -167,20 +167,20 @@ export const InvoiceScanner: React.FC = () => {
 
           {scannedItems.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Extracted Items</h3>
-              <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
-                <ul role="list" className="divide-y divide-gray-200">
+              <h3 className="text-lg font-medium leading-6 text-gray-100">Extracted Items</h3>
+              <div className="mt-4 bg-[#2C2C2C] shadow overflow-hidden sm:rounded-md border border-[#444444]">
+                <ul role="list" className="divide-y divide-gray-700">
                   {scannedItems.map((item, index) => (
                     <li key={index} className="px-4 py-4 sm:px-6 flex items-center justify-between gap-4">
                        <div className="flex items-center flex-1 min-w-0">
                           <div className={`w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0 ${getConfidenceColor(item.confidence)}`}></div>
                           <div className="min-w-0">
-                              <p className="text-sm font-medium text-blue-600 truncate">{item.itemName}</p>
-                              <p className="mt-1 text-sm text-gray-500">{item.quantity} {item.unit || ''}</p>
+                              <p className="text-sm font-medium text-[#FF6B6B] truncate">{item.itemName}</p>
+                              <p className="mt-1 text-sm text-gray-400">{item.quantity} {item.unit || ''}</p>
                           </div>
                         </div>
                       <div className="text-right flex-shrink-0">
-                         <p className="text-sm font-medium text-gray-900">${item.price.toFixed(2)}</p>
+                         <p className="text-sm font-medium text-gray-100">${item.price.toFixed(2)}</p>
                          {item.confidence !== undefined && (
                             <p className={`mt-1 text-xs font-bold ${getConfidenceTextColor(item.confidence)}`}>
                                 {(item.confidence * 100).toFixed(0)}% Conf.

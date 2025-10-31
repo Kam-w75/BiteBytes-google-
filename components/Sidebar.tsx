@@ -31,19 +31,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, i
     <>
       {/* Mobile Overlay */}
       <div 
-        className={`fixed inset-0 bg-gray-900 bg-opacity-50 z-30 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black bg-opacity-70 z-30 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
         aria-hidden="true"
       ></div>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 flex flex-col w-64 bg-gray-800 text-white z-40 transform transition-transform duration-300 ease-in-out 
+      <div className={`fixed inset-y-0 left-0 flex flex-col w-64 bg-[#121212] text-white z-40 transform transition-transform duration-300 ease-in-out 
         md:relative md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="flex items-center justify-between h-16 border-b border-gray-700 px-4 md:h-20 md:justify-center">
-          <h1 className="text-2xl font-bold">meez</h1>
-          <button onClick={onClose} className="md:hidden text-gray-300 hover:text-white">
+        <div className="flex items-center justify-between h-16 border-b border-gray-800 px-4 md:h-20 md:justify-center">
+          <h1 className="text-2xl font-bold text-[#FF6B6B]">Bitebytes</h1>
+          <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
@@ -54,8 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, i
               onClick={() => handleItemClick(item.id)}
               className={`w-full flex items-center px-4 py-2 text-left text-sm font-medium rounded-lg transition-colors duration-150 ${
                 currentPage === item.id
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  ? 'bg-[#FF6B6B]/10 text-[#FF6B6B]'
+                  : 'text-gray-400 hover:bg-gray-700 hover:text-white'
               }`}
             >
               {item.icon}

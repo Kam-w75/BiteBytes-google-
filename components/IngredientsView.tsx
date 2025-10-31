@@ -15,7 +15,7 @@ interface IngredientsViewProps {
 const PriceTrend: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
   const isUp = trend > 0;
   const isDown = trend < 0;
-  const color = isUp ? 'text-red-600' : isDown ? 'text-green-600' : 'text-gray-500';
+  const color = isUp ? 'text-red-400' : isDown ? 'text-green-400' : 'text-gray-500';
   const Icon = isUp ? ArrowUpIcon : isDown ? ArrowDownIcon : ArrowRightIcon;
   
   return (
@@ -33,23 +33,23 @@ const StatusDot: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
 };
 
 const IngredientCard: React.FC<{ ingredient: Ingredient }> = ({ ingredient }) => (
-  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow duration-200 cursor-pointer">
+  <div className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444] flex flex-col justify-between hover:shadow-lg hover:border-gray-600 transition-all duration-200 cursor-pointer">
     <div>
         <div className="flex justify-between items-start">
-            <h3 className="font-bold text-lg text-gray-800 pr-2">{ingredient.name}</h3>
+            <h3 className="font-bold text-lg text-gray-100 pr-2">{ingredient.name}</h3>
             <StatusDot trend={ingredient.priceTrend} />
         </div>
-        <p className="text-2xl font-bold text-gray-900 mt-1">
+        <p className="text-2xl font-bold text-gray-100 mt-1">
             ${ingredient.cost?.toFixed(2)}
-            <span className="text-sm font-normal text-gray-500">/{ingredient.unit}</span>
+            <span className="text-sm font-normal text-gray-400">/{ingredient.unit}</span>
         </p>
         <div className="flex items-center mt-2">
             <PriceTrend trend={ingredient.priceTrend} />
         </div>
     </div>
-    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-500">
-        <span>Supplier: <strong>{ingredient.supplier}</strong></span>
-        <span>Used in: <strong>{ingredient.usedInRecipes} recipes</strong></span>
+    <div className="mt-4 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
+        <span>Supplier: <strong className="text-gray-400">{ingredient.supplier}</strong></span>
+        <span>Used in: <strong className="text-gray-400">{ingredient.usedInRecipes} recipes</strong></span>
     </div>
   </div>
 );
@@ -132,23 +132,23 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
       {/* Header */}
       <div className="flex justify-between items-center mb-4 gap-4">
         <div className="relative flex-grow">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
           <input
             type="search"
             placeholder="Find ingredients..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+            className="pl-10 pr-4 py-2 w-full border border-[#444444] rounded-md text-sm bg-transparent text-white focus:ring-[#FF6B6B] focus:border-[#FF6B6B] placeholder-gray-500"
           />
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={() => setIsFilterPanelOpen(true)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-md">
+          <button onClick={() => setIsFilterPanelOpen(true)} className="p-2 text-gray-400 hover:bg-[#2C2C2C] rounded-md">
             <AdjustmentsHorizontalIcon className="h-5 w-5" />
           </button>
           <button
             type="button"
             onClick={onAddIngredientClick}
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-[#FF6B6B] px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-[#E85A5A]"
           >
             <PlusIcon className="-ml-0.5 h-5 w-5" />
             Add
@@ -158,12 +158,12 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
 
       {/* AI Insights Banner */}
       {isBannerVisible && highCostItemsCount > 0 && (
-        <div className="relative bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm mb-4 flex justify-between items-center">
-          <p>
+        <div className="relative bg-coral-500/10 border border-[#FF6B6B]/20 text-coral-200 px-4 py-3 rounded-lg text-sm mb-4 flex justify-between items-center">
+          <p className="text-[#FFC2C2]">
             <span className="font-bold mr-2">🎯 AI Insight:</span> 
             {highCostItemsCount} ingredients are costing more than usual. They are prioritized in "Smart Sort".
           </p>
-          <button onClick={() => setIsBannerVisible(false)} className="text-blue-600 hover:text-blue-800">&times;</button>
+          <button onClick={() => setIsBannerVisible(false)} className="text-[#FFC2C2] hover:text-white">&times;</button>
         </div>
       )}
 

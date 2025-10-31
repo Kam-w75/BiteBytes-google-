@@ -12,7 +12,7 @@ interface AIChatProps {
 const SuggestionChip: React.FC<{ text: string; onClick: () => void }> = ({ text, onClick }) => (
   <button
     onClick={onClick}
-    className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-300 transition-colors flex-shrink-0"
+    className="px-3 py-1.5 bg-gray-700 text-gray-200 rounded-full text-sm font-medium hover:bg-gray-600 transition-colors flex-shrink-0"
   >
     {text}
   </button>
@@ -73,11 +73,11 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
     }
   };
 
-  const fabClasses = `fixed bottom-4 right-4 md:bottom-8 md:right-8 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out text-white transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 z-50 ${
-    isOpen ? 'bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'
+  const fabClasses = `fixed bottom-4 right-4 md:bottom-8 md:right-8 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out text-black transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6B6B] z-50 ${
+    isOpen ? 'bg-gray-400' : 'bg-[#FF6B6B] hover:bg-[#E85A5A]'
   }`;
   
-  const chatContainerClasses = `fixed bg-white flex flex-col z-50 overflow-hidden border border-gray-200
+  const chatContainerClasses = `fixed bg-[#1E1E1E] flex flex-col z-50 overflow-hidden border border-gray-700
     transition-all duration-300 ease-in-out
     ${isOpen 
       ? 'opacity-100 translate-y-0' 
@@ -95,15 +95,15 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
 
       <div className={chatContainerClasses}>
         {/* Header */}
-        <header className="flex items-center p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-3">
-            <CpuChipIcon className="w-6 h-6 text-white" />
+        <header className="flex items-center p-4 border-b border-gray-700 bg-[#2C2C2C] flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B6B] to-[#ff8a8a] flex items-center justify-center mr-3">
+            <CpuChipIcon className="w-6 h-6 text-black" />
           </div>
           <div>
-            <h2 className="font-bold text-lg text-gray-800">AI Assistant</h2>
-            <p className="text-sm text-gray-500">{isListening ? 'Listening...' : 'Ready to help'}</p>
+            <h2 className="font-bold text-lg text-gray-100">AI Assistant</h2>
+            <p className="text-sm text-gray-400">{isListening ? 'Listening...' : 'Ready to help'}</p>
           </div>
-          <button onClick={() => setIsOpen(false)} className="ml-auto md:hidden text-gray-500 p-2 rounded-full hover:bg-gray-200">
+          <button onClick={() => setIsOpen(false)} className="ml-auto md:hidden text-gray-500 p-2 rounded-full hover:bg-gray-600">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </header>
@@ -113,15 +113,15 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
           {messages.map((msg, index) => (
             <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.sender === 'ai' && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <CpuChipIcon className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B6B] to-[#ff8a8a] flex items-center justify-center flex-shrink-0">
+                  <CpuChipIcon className="w-5 h-5 text-black" />
                 </div>
               )}
               <div
                 className={`px-4 py-2 rounded-2xl max-w-sm whitespace-pre-wrap ${
                   msg.sender === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-none'
-                    : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                    ? 'bg-[#FF6B6B] text-black rounded-br-none'
+                    : 'bg-gray-700 text-gray-100 rounded-bl-none'
                 }`}
               >
                 {msg.text}
@@ -130,14 +130,14 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
           ))}
           {isLoading && (
              <div className="flex items-end gap-2 justify-start">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <CpuChipIcon className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B6B] to-[#ff8a8a] flex items-center justify-center flex-shrink-0">
+                  <CpuChipIcon className="w-5 h-5 text-black" />
                 </div>
-                 <div className="px-4 py-2 rounded-2xl bg-gray-200 text-gray-800 rounded-bl-none">
+                 <div className="px-4 py-2 rounded-2xl bg-gray-700 text-gray-100 rounded-bl-none">
                      <div className="flex items-center space-x-1">
-                         <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                         <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                         <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                      </div>
                  </div>
              </div>
@@ -146,7 +146,7 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+        <div className="p-4 border-t border-gray-700 bg-[#1E1E1E] flex-shrink-0">
            <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2 -mx-4 px-4">
                <SuggestionChip text="Why is my food cost high?" onClick={() => handleSuggestionClick("Why is my food cost high?")}/>
                <SuggestionChip text="Most profitable dish?" onClick={() => handleSuggestionClick("What's my most profitable dish?")}/>
@@ -160,12 +160,12 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
               onKeyDown={handleKeyDown}
               placeholder={isListening ? "Listening..." : "Ask me anything..."}
               rows={1}
-              className="w-full pl-4 pr-20 py-2 border border-gray-300 rounded-full resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full pl-4 pr-20 py-2 border border-gray-600 bg-transparent text-gray-200 rounded-full resize-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
                 <button
                   onClick={handleMicClick}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
                   aria-label={isListening ? 'Stop listening' : 'Start listening'}
                 >
                   <MicrophoneIcon className="w-4 h-4" />
@@ -173,7 +173,7 @@ export const AIChat: React.FC<AIChatProps> = ({ recipes, ingredients }) => {
                 <button
                   onClick={handleSend}
                   disabled={isLoading || !inputValue.trim()}
-                  className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                  className="w-8 h-8 rounded-full bg-[#FF6B6B] text-black flex items-center justify-center hover:bg-[#E85A5A] disabled:bg-gray-500 transition-colors"
                   aria-label="Send message"
                 >
                   <PaperAirplaneIcon className="w-4 h-4" />

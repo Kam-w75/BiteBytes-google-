@@ -14,22 +14,22 @@ import {
 const getInsightIcon = (type: InsightType) => {
     switch (type) {
         case InsightType.Warning:
-            return <WarningIcon className="mr-3" />;
+            return <WarningIcon className="mr-3 h-6 w-6 text-red-400" />;
         case InsightType.Opportunity:
-            return <OpportunityIcon className="mr-3" />;
+            return <OpportunityIcon className="mr-3 h-6 w-6 text-blue-400" />;
         case InsightType.Success:
-            return <SuccessIcon className="mr-3" />;
+            return <SuccessIcon className="mr-3 h-6 w-6 text-green-400" />;
         default:
             return null;
     }
 };
 
 const TopPriorityCard: React.FC = () => (
-    <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-        <h3 className="text-sm font-semibold text-red-600 uppercase tracking-wide">Top Priority</h3>
-        <p className="mt-2 text-2xl font-bold text-gray-900">⚠️ Your food cost jumped to 34% this week (target: 30%)</p>
-        <p className="mt-1 text-base text-gray-600">The biggest drivers: Beef +$312, Produce +$147</p>
-        <button className="mt-4 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">
+    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-lg border border-[#444444]">
+        <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide">Top Priority</h3>
+        <p className="mt-2 text-2xl font-bold text-gray-100">⚠️ Your food cost jumped to 34% this week (target: 30%)</p>
+        <p className="mt-1 text-base text-gray-300">The biggest drivers: Beef +$312, Produce +$147</p>
+        <button className="mt-4 px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
             See Details
         </button>
     </div>
@@ -37,13 +37,13 @@ const TopPriorityCard: React.FC = () => (
 
 const KeyMetric: React.FC<{ label: string; value: string; change?: string; changeType?: 'increase' | 'decrease' }> = ({ label, value, change, changeType }) => {
     const isIncrease = changeType === 'increase';
-    const changeColor = isIncrease ? 'text-red-600' : 'text-green-600';
+    const changeColor = isIncrease ? 'text-red-400' : 'text-green-400';
     const ChangeIcon = isIncrease ? ArrowUpIcon : ArrowDownIcon;
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <p className="text-sm font-medium text-gray-500">{label}</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+        <div className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444]">
+            <p className="text-sm font-medium text-gray-400">{label}</p>
+            <p className="mt-1 text-2xl font-bold text-gray-100">{value}</p>
             {change && (
                 <p className={`mt-1 text-xs font-medium flex items-center ${changeColor}`}>
                     <ChangeIcon className="h-3 w-3 mr-0.5" />
@@ -58,16 +58,28 @@ const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
     const baseColor =
         insight.type === InsightType.Warning ? 'red' :
         insight.type === InsightType.Opportunity ? 'blue' : 'green';
+    
+    const borderColor =
+        insight.type === InsightType.Warning ? 'border-l-red-400' :
+        insight.type === InsightType.Opportunity ? 'border-l-[#FF6B6B]' : 'border-l-green-400';
+        
+    const textColor =
+        insight.type === InsightType.Warning ? 'text-red-400' :
+        insight.type === InsightType.Opportunity ? 'text-[#FF6B6B]' : 'text-green-400';
+
+    const buttonClasses = 
+        insight.type === InsightType.Opportunity 
+        ? 'bg-[#FF6B6B] text-black font-semibold hover:bg-[#E85A5A]' 
+        : `bg-${baseColor}-600 text-white hover:bg-${baseColor}-700`;
 
     return (
-        <div className={`bg-${baseColor}-50 border border-${baseColor}-200 p-4 rounded-lg flex flex-col`}>
+        <div className={`bg-[#2C2C2C] border border-[#444444] ${borderColor} border-l-4 p-4 rounded-lg flex flex-col`}>
             <div className="flex items-start">
-                {getInsightIcon(insight.type)}
-                <h4 className={`flex-1 font-semibold text-lg text-${baseColor}-900`}>{insight.headline}</h4>
+                <h4 className={`flex-1 font-semibold text-lg ${textColor}`}>{insight.headline}</h4>
             </div>
-            <p className="mt-2 text-sm text-gray-700 flex-grow">{insight.explanation}</p>
+            <p className="mt-2 text-sm text-gray-300 flex-grow">{insight.explanation}</p>
             <div className="mt-4 text-right">
-                <button className={`px-3 py-1.5 text-sm font-semibold text-white bg-${baseColor}-600 rounded-md shadow-sm hover:bg-${baseColor}-700`}>
+                <button className={`px-3 py-1.5 text-sm rounded-md shadow-sm ${buttonClasses}`}>
                     {insight.actionText}
                 </button>
             </div>
@@ -102,7 +114,7 @@ const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color })
 
 export const Stats: React.FC = () => {
     return (
-        <div className="bg-gray-50/50 min-h-screen">
+        <div className="bg-[#1E1E1E] min-h-screen">
             <Header
                 title="AI Insights"
                 subtitle="What matters most right now"
@@ -118,32 +130,32 @@ export const Stats: React.FC = () => {
                 </div>
 
                 <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Insights Feed</h3>
+                    <h3 className="text-xl font-semibold text-gray-200 mb-4">Insights Feed</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {insights.map(insight => (
                             <InsightCard key={insight.id} insight={insight} />
                         ))}
-                         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-800">Your Week in Numbers</h3>
+                         <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+                            <h3 className="text-lg font-semibold text-gray-200">Your Week in Numbers</h3>
                             <div className="mt-4 space-y-4">
                                 <div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-600">Sales</span>
-                                        <span className="font-bold text-gray-800">$12,450</span>
+                                        <span className="font-medium text-gray-400">Sales</span>
+                                        <span className="font-bold text-gray-200">$12,450</span>
                                     </div>
-                                    <Sparkline data={[5, 8, 9, 12, 10, 11, 12]} color="#3B82F6" />
+                                    <Sparkline data={[5, 8, 9, 12, 10, 11, 12]} color="#FF6B6B" />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-600">Food Cost</span>
-                                        <span className="font-bold text-gray-800">$4,233</span>
+                                        <span className="font-medium text-gray-400">Food Cost</span>
+                                        <span className="font-bold text-gray-200">$4,233</span>
                                     </div>
                                     <Sparkline data={[10, 11, 9, 12, 13, 11, 14]} color="#EF4444" />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-600">Profit</span>
-                                        <span className="font-bold text-gray-800">$2,280</span>
+                                        <span className="font-medium text-gray-400">Profit</span>
+                                        <span className="font-bold text-gray-200">$2,280</span>
                                     </div>
                                     <Sparkline data={[6, 7, 8, 6, 9, 10, 9]} color="#10B981" />
                                 </div>

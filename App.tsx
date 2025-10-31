@@ -65,7 +65,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 font-sans">
+    <div className="flex h-screen bg-[#1E1E1E] font-sans text-gray-200">
       <Sidebar 
         currentPage={currentPage} 
         setCurrentPage={setCurrentPage} 
@@ -74,7 +74,7 @@ const App: React.FC = () => {
       />
       <main className="flex-1 flex flex-col overflow-hidden">
         <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
-        <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto bg-[#1E1E1E]">
           {renderPage()}
         </div>
       </main>

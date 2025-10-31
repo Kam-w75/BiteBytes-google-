@@ -27,13 +27,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({ activeFilter, onFilterChan
                     disabled={filter.locked}
                     className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors duration-150 flex-shrink-0 ${
                         activeFilter === filter.name
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-[#FF6B6B] text-black font-semibold' 
+                            : 'bg-[#2C2C2C] text-gray-300 hover:bg-[#444444]'
                     } ${filter.locked ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                     {filter.icon}
                     <span>{filter.name}</span>
-                    {filter.count !== null && <span className="ml-1.5 rounded-full bg-white px-1.5 text-xs font-semibold text-gray-500">{filter.count}</span>}
+                    {filter.count !== null && <span className="ml-1.5 rounded-full bg-gray-600 px-1.5 text-xs font-semibold text-gray-100">{filter.count}</span>}
                     {filter.locked && <span className="ml-1.5">🔒</span>}
                 </button>
             ))}
