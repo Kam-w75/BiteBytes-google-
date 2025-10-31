@@ -8,12 +8,13 @@ import { OnboardingWelcome } from './components/OnboardingWelcome';
 import { Stats } from './components/Stats';
 import { FoodCostReport } from './components/FoodCostReport';
 import { PriceChangeHistory } from './components/PriceChangeHistory';
-import { AuraOrb } from './components/AuraOrb';
 import { VoiceRecipeCreator } from './components/VoiceRecipeCreator';
-import { recipes } from './data';
-import { Recipe } from './types';
+import { recipes, ingredients } from './data';
+import { Recipe, Ingredient } from './types';
 import { TargetCosting } from './components/TargetCosting';
 import { ImportExportHub } from './components/ImportExportHub';
+import { AIChat } from './components/AIChat';
+import { MobileHeader } from './components/MobileHeader';
 
 export type Page = 'dashboard' | 'costing' | 'reports' | 'price-history' | 'invoices' | 'nutrition' | 'import-export' | 'settings' | 'help';
 
@@ -22,6 +23,8 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showVoiceCreator, setShowVoiceCreator] = useState(false);
   const [allRecipes, setAllRecipes] = useState<Recipe[]>(recipes);
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>(ingredients);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
   const renderPage = () => {
@@ -63,13 +66,19 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage} 
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
       <main className="flex-1 flex flex-col overflow-hidden">
+        <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
         <div className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
           {renderPage()}
         </div>
       </main>
-      <AuraOrb setCurrentPage={setCurrentPage} />
+      <AIChat recipes={allRecipes} ingredients={allIngredients} />
       {showVoiceCreator && <VoiceRecipeCreator onClose={() => setShowVoiceCreator(false)} onRecipeCreate={handleRecipeCreate} />}
     </div>
   );

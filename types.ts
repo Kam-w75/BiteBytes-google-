@@ -115,3 +115,9 @@ export interface PriceChangeEntry {
     items: PriceChangeItem[];
     affectedRecipes: number;
 }
+
+export interface ChatMessage {
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: Date;
+}

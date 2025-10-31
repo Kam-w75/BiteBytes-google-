@@ -1,10 +1,12 @@
 import React from 'react';
 import { Page } from '../App';
-import { ChartPieIcon, CalculatorIcon, DocumentChartBarIcon, DocumentTextIcon, SparklesIcon, QuestionMarkCircleIcon, ArrowTrendingUpIcon, Cog8ToothIcon, ArrowsRightLeftIcon } from './Icons';
+import { ChartPieIcon, CalculatorIcon, DocumentChartBarIcon, DocumentTextIcon, SparklesIcon, QuestionMarkCircleIcon, ArrowTrendingUpIcon, Cog8ToothIcon, ArrowsRightLeftIcon, XMarkIcon } from './Icons';
 
 interface SidebarProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const navItems: { id: Page; name: string; icon: React.ReactNode }[] = [
@@ -19,28 +21,49 @@ const navItems: { id: Page; name: string; icon: React.ReactNode }[] = [
   { id: 'help', name: 'Help', icon: <QuestionMarkCircleIcon className="h-6 w-6" /> },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, isOpen, onClose }) => {
+  const handleItemClick = (page: Page) => {
+    setCurrentPage(page);
+    onClose();
+  };
+  
   return (
-    <div className="flex flex-col w-64 bg-gray-800 text-white">
-      <div className="flex items-center justify-center h-20 border-b border-gray-700">
-        <h1 className="text-2xl font-bold">meez</h1>
-      </div>
-      <nav className="flex-1 px-2 py-4 space-y-2">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setCurrentPage(item.id)}
-            className={`w-full flex items-center px-4 py-2 text-left text-sm font-medium rounded-lg transition-colors duration-150 ${
-              currentPage === item.id
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            {item.icon}
-            <span className="ml-4">{item.name}</span>
+    <>
+      {/* Mobile Overlay */}
+      <div 
+        className={`fixed inset-0 bg-gray-900 bg-opacity-50 z-30 md:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+        aria-hidden="true"
+      ></div>
+
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 flex flex-col w-64 bg-gray-800 text-white z-40 transform transition-transform duration-300 ease-in-out 
+        md:relative md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="flex items-center justify-between h-16 border-b border-gray-700 px-4 md:h-20 md:justify-center">
+          <h1 className="text-2xl font-bold">meez</h1>
+          <button onClick={onClose} className="md:hidden text-gray-300 hover:text-white">
+            <XMarkIcon className="h-6 w-6" />
           </button>
-        ))}
-      </nav>
-    </div>
+        </div>
+        <nav className="flex-1 px-2 py-4 space-y-2">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleItemClick(item.id)}
+              className={`w-full flex items-center px-4 py-2 text-left text-sm font-medium rounded-lg transition-colors duration-150 ${
+                currentPage === item.id
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              {item.icon}
+              <span className="ml-4">{item.name}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    </>
   );
 };

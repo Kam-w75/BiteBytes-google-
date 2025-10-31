@@ -18,23 +18,25 @@ const filters = [
 ];
 
 export const FilterBar: React.FC<FilterBarProps> = ({ activeFilter, onFilterChange }) => (
-    <div className="flex items-center space-x-2">
-        {filters.map(filter => (
-            <button
-                key={filter.name}
-                onClick={() => onFilterChange(filter.name)}
-                disabled={filter.locked}
-                className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors duration-150 ${
-                    activeFilter === filter.name
-                        ? 'bg-blue-100 text-blue-700' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } ${filter.locked ? 'cursor-not-allowed opacity-60' : ''}`}
-            >
-                {filter.icon}
-                <span>{filter.name}</span>
-                {filter.count !== null && <span className="ml-1.5 rounded-full bg-white px-1.5 text-xs font-semibold text-gray-500">{filter.count}</span>}
-                {filter.locked && <span className="ml-1.5">🔒</span>}
-            </button>
-        ))}
+    <div className="overflow-x-auto whitespace-nowrap py-1 -my-1">
+        <div className="flex items-center space-x-2">
+            {filters.map(filter => (
+                <button
+                    key={filter.name}
+                    onClick={() => onFilterChange(filter.name)}
+                    disabled={filter.locked}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors duration-150 flex-shrink-0 ${
+                        activeFilter === filter.name
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    } ${filter.locked ? 'cursor-not-allowed opacity-60' : ''}`}
+                >
+                    {filter.icon}
+                    <span>{filter.name}</span>
+                    {filter.count !== null && <span className="ml-1.5 rounded-full bg-white px-1.5 text-xs font-semibold text-gray-500">{filter.count}</span>}
+                    {filter.locked && <span className="ml-1.5">🔒</span>}
+                </button>
+            ))}
+        </div>
     </div>
 );
