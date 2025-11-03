@@ -27,7 +27,7 @@ export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, onSel
             const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
             
             return (
-              <tr key={recipe.id} className="hover:bg-[#444444] cursor-pointer" onClick={() => onSelectRecipe(recipe)}>
+              <tr key={recipe.id} className="hover:bg-[#444444] transition-colors duration-150 cursor-pointer" onClick={() => onSelectRecipe(recipe)}>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-100 sm:pl-6">{recipe.name}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">{recipe.servings}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">${costPerServing.toFixed(2)}</td>

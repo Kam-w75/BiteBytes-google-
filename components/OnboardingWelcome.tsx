@@ -13,18 +13,18 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
       ></div>
       <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white p-4">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Finally, Food Cost Control That's Actually Easy
+          <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+            BiteBytes
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-200">
-            AI handles the busywork. You focus on cooking great food.
+            AI handles the busywork. You focus on cooking great food. Finally, food cost control that's actually easy.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-y-6">
             <button
               onClick={onComplete}
               className="rounded-md bg-[#FF6B6B] px-8 py-4 text-lg font-semibold text-black shadow-sm hover:bg-[#E85A5A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B6B] transform transition-transform duration-200 hover:scale-105"
             >
-              Get Started - It's Free
+              Get Started
             </button>
             <p className="text-sm">
               Already have an account?{' '}

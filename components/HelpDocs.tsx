@@ -1,65 +1,51 @@
-
 import React from 'react';
 import { Header } from './Header';
 
+const HelpSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+        <h3 className="text-xl font-bold text-[#FF6B6B] mb-4">{title}</h3>
+        <div className="prose prose-invert prose-sm max-w-none text-gray-300">
+            {children}
+        </div>
+    </div>
+);
+
 export const HelpDocs: React.FC = () => {
     return (
-        <div>
+        <div className="bg-[#1E1E1E]">
             <Header
-                title="Costing your recipes"
-                subtitle="Recipe Costs, Ingredient Costs, and Invoice Processing"
+                title="Help & Documentation"
+                subtitle="Your guide to getting the most out of BiteBytes."
             />
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
-                    <div className="bg-white p-6 rounded-lg shadow-sm prose max-w-none">
-                        <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded-md mb-6">
-                            <h4 className="font-bold">Costing is available to:</h4>
-                            <ul className="list-disc pl-5 mt-2">
-                                <li>Plus, Starter and Scale</li>
-                                <li>Team Members: Account Owners, Editors, and Managers</li>
-                            </ul>
-                        </div>
-                        
-                        <h3>Introduction</h3>
-                        <p>To get your recipes properly costed, follow the below steps:</p>
-                        <ol>
-                            <li>Import your invoices (or manually set ingredient costs) for meez to properly cost.</li>
-                            <li>Fix any errors or needing attention items that show up from the import.</li>
-                            <li>Fix any remaining errors that might display on the recipe itself.</li>
-                        </ol>
-                        <p>The below sections provide a deeper dive into each of these steps.</p>
+            <div className="p-6 max-w-4xl mx-auto space-y-8">
+                <HelpSection title="Step 1: Setting Up Your Ingredients">
+                    <p>The foundation of accurate costing is your ingredient list. You need to tell BiteBytes what you pay for each item. There are three ways to do this:</p>
+                    <ul>
+                        <li><strong>Scan Invoices:</strong> The fastest way. Go to the 'Invoices' tab and upload a picture of an invoice. Our AI will read it and pull out all the items and their costs.</li>
+                        <li><strong>Manual Entry:</strong> For one-off items, you can go to 'Costing' {'->'} 'Ingredients' and click 'Add' to enter details by hand.</li>
+                        <li><strong>Import Spreadsheet:</strong> If you have an order guide or inventory list, you can import it. Go to the 'Import/Export' hub to download our template.</li>
+                    </ul>
+                </HelpSection>
 
-                        <hr className="my-8" />
+                <HelpSection title="Step 2: Building & Costing Recipes">
+                    <p>Once your ingredients have prices, you can build recipes to see exactly how much each dish costs to make.</p>
+                    <ol>
+                        <li>Go to 'Costing' {'->'} 'Recipes' and click 'Add Recipe'.</li>
+                        <li>Give your recipe a name, like "Classic Cheeseburger".</li>
+                        <li>Start adding ingredients. As you type, BiteBytes will suggest ingredients from your list.</li>
+                        <li>Specify the quantity and unit for each ingredient (e.g., 1 lb of Ground Beef, 4 each of Brioche Buns).</li>
+                        <li>As you add ingredients, you'll see the total recipe cost and cost per serving update in real-time.</li>
+                    </ol>
+                </HelpSection>
 
-                        <h3>Step 1: Import your invoices</h3>
-                        <p>For meez to properly calculate recipe costs, it needs to know what you paid for each ingredient in the recipe. Knowing that will result in an accurate and personalized recipe cost for you.</p>
-                        <p>There are a few ways to get your invoices into meez:</p>
-                        <ul>
-                            <li>You can <a href="#">manually set the ingredient costs</a> in meez.</li>
-                            <li>You can <a href="#">import your ingredient costs</a> to meez via a spreadsheet.</li>
-                            <li>If you are a Sysco or US Foods customer, you can enable one of our <a href="#">integrations</a>, which will sync your invoices and purchase data with meez automatically.</li>
-                        </ul>
-
-                        <hr className="my-8" />
-                        
-                        <h3>Step 2: Fix any items needing attention</h3>
-                        <p>If you import your costs, use one of our integrations, or use our invoice processing service - you might need to address some items that need attention once your invoices are imported to meez.</p>
-                        <p>The purchase item name in the invoice/import is too vague and could not match any of your ingredients. To fix this please use the Search for ingredient to map to the correct ingredient in your meez account, or create a new one.</p>
-                    </div>
-                </div>
-                <div className="md:col-span-1">
-                    <div className="sticky top-6">
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                            <h4 className="font-semibold text-gray-800 mb-2">Contents</h4>
-                            <ul className="text-sm text-blue-600 space-y-2">
-                                <li><a href="#" className="hover:underline">Introduction</a></li>
-                                <li><a href="#" className="hover:underline">Step 1: Import your invoices</a></li>
-                                <li><a href="#" className="hover:underline">Step 2: Fix any items needing attention</a></li>
-                                <li><a href="#" className="hover:underline">Step 3: Fix any lingering issues that display on the recipe</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <HelpSection title="Step 3: Understanding Your Dashboard">
+                    <p>The Dashboard is your command center. It uses AI to show you the most important information about your business right now.</p>
+                    <ul>
+                        <li><strong>Top Priority:</strong> This card shows the most urgent issue, like a sudden jump in your food cost percentage.</li>
+                        <li><strong>Key Metrics:</strong> A quick overview of your weekly and monthly performance.</li>
+                        <li><strong>Insights Feed:</strong> Here, the AI will point out opportunities (like a cheap ingredient you should use more), warnings (like an ingredient price that has shot up), and successes (like a very profitable menu item).</li>
+                    </ul>
+                </HelpSection>
             </div>
         </div>
     );

@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, i
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex items-center justify-between h-16 border-b border-gray-800 px-4 md:h-20 md:justify-center">
-          <h1 className="text-2xl font-bold text-[#FF6B6B]">Bitebytes</h1>
+          <h1 className="text-2xl font-bold text-[#FF6B6B]">BiteBytes</h1>
           <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
             <XMarkIcon className="h-6 w-6" />
           </button>

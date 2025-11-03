@@ -16,7 +16,7 @@ const getInsightIcon = (type: InsightType) => {
         case InsightType.Warning:
             return <WarningIcon className="mr-3 h-6 w-6 text-red-400" />;
         case InsightType.Opportunity:
-            return <OpportunityIcon className="mr-3 h-6 w-6 text-blue-400" />;
+            return <OpportunityIcon className="mr-3 h-6 w-6 text-[#FF6B6B]" />;
         case InsightType.Success:
             return <SuccessIcon className="mr-3 h-6 w-6 text-green-400" />;
         default:
@@ -57,7 +57,7 @@ const KeyMetric: React.FC<{ label: string; value: string; change?: string; chang
 const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
     const baseColor =
         insight.type === InsightType.Warning ? 'red' :
-        insight.type === InsightType.Opportunity ? 'blue' : 'green';
+        insight.type === InsightType.Opportunity ? 'red' : 'green';
     
     const borderColor =
         insight.type === InsightType.Warning ? 'border-l-red-400' :

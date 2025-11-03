@@ -30,53 +30,53 @@ const VendorCard: React.FC<{
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col hover:shadow-md transition-shadow duration-200">
+        <div className="bg-[#2C2C2C] rounded-lg shadow-sm border border-[#444444] flex flex-col hover:shadow-lg hover:border-gray-600 transition-all duration-200">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="p-4 border-b border-[#444444] flex items-center justify-between">
                 <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg mr-3">
+                    <div className="w-10 h-10 rounded-full bg-[#FF6B6B]/20 text-[#FF6B6B] flex items-center justify-center font-bold text-lg mr-3">
                         {getInitials(vendor.name)}
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg text-gray-800">{vendor.name}</h3>
-                        <p className="text-xs text-gray-500">{vendor.type}</p>
+                        <h3 className="font-bold text-lg text-gray-100">{vendor.name}</h3>
+                        <p className="text-xs text-gray-400">{vendor.type}</p>
                     </div>
                 </div>
                 {vendor.isPrimary && (
-                    <div className="flex items-center text-xs font-semibold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                    <div className="flex items-center text-xs font-semibold bg-yellow-900/50 text-yellow-300 px-2 py-1 rounded-full">
                         <StarIcon className="w-3 h-3 mr-1" />
                         Primary
                     </div>
                 )}
             </div>
             {/* Body */}
-            <div className="p-4 space-y-3 flex-grow">
+            <div className="p-4 space-y-3 flex-grow text-gray-300">
                 <div className="text-sm">
-                    <p className="font-semibold text-gray-600">Contact</p>
-                    <p className="flex items-center text-gray-800 mt-1"><EnvelopeIcon className="w-4 h-4 mr-2 text-gray-400"/> {vendor.contact.email}</p>
-                    <p className="flex items-center text-gray-800 mt-1"><PhoneIcon className="w-4 h-4 mr-2 text-gray-400"/> {vendor.contact.phone} ({vendor.contact.name})</p>
+                    <p className="font-semibold text-gray-400">Contact</p>
+                    <p className="flex items-center mt-1"><EnvelopeIcon className="w-4 h-4 mr-2 text-gray-500"/> {vendor.contact.email}</p>
+                    <p className="flex items-center mt-1"><PhoneIcon className="w-4 h-4 mr-2 text-gray-500"/> {vendor.contact.phone} ({vendor.contact.name})</p>
                 </div>
                  <div className="text-sm">
-                    <p className="font-semibold text-gray-600">Account #</p>
-                    <p className="text-gray-800">{vendor.accountNumber || 'N/A'}</p>
+                    <p className="font-semibold text-gray-400">Account #</p>
+                    <p>{vendor.accountNumber || 'N/A'}</p>
                 </div>
                  <div className="text-sm">
-                    <p className="font-semibold text-gray-600">Order Days</p>
-                    <div className="flex space-x-1 mt-1">
+                    <p className="font-semibold text-gray-400">Order Days</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
                         {vendor.orderDays.map(day => (
-                            <span key={day} className="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded-full">{day}</span>
+                            <span key={day} className="px-2 py-0.5 text-xs bg-gray-700 text-gray-300 rounded-full">{day}</span>
                         ))}
                     </div>
                 </div>
             </div>
             {/* Footer */}
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-                <p className="text-xs text-gray-500">Last Order: <span className="font-medium text-gray-600">{vendor.lastOrderDate}</span></p>
+            <div className="p-4 border-t border-[#444444] bg-[#1E1E1E] rounded-b-lg flex justify-between items-center">
+                <p className="text-xs text-gray-500">Last Order: <span className="font-medium text-gray-400">{vendor.lastOrderDate}</span></p>
                 <div className="flex items-center space-x-2">
-                    <button onClick={() => onEdit(vendor)} className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-md">
+                    <button onClick={() => onEdit(vendor)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md">
                         <PencilSquareIcon className="w-4 h-4" />
                     </button>
-                    <button onClick={() => onDelete(vendor.id)} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md">
+                    <button onClick={() => onDelete(vendor.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/50 rounded-md">
                         <TrashIcon className="w-4 h-4" />
                     </button>
                 </div>
@@ -95,22 +95,22 @@ const AddVendorModal: React.FC<{
     const isEditing = !!vendorToEdit;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+            <div className="bg-[#2C2C2C] rounded-lg shadow-xl p-6 w-full max-w-lg relative border border-[#444444]">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
                     <XMarkIcon className="h-6 w-6" />
                 </button>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">{isEditing ? 'Edit Supplier' : 'Add New Supplier'}</h2>
+                <h2 className="text-xl font-bold text-gray-100 mb-4">{isEditing ? 'Edit Supplier' : 'Add New Supplier'}</h2>
                 
-                <form className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <form className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 text-gray-300">
                     <div>
-                        <label htmlFor="vendor-name" className="block text-sm font-medium text-gray-700">Supplier Name</label>
-                        <input type="text" id="vendor-name" defaultValue={vendorToEdit?.name} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                        <label htmlFor="vendor-name" className="block text-sm font-medium text-gray-400">Supplier Name</label>
+                        <input type="text" id="vendor-name" defaultValue={vendorToEdit?.name} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="vendor-type" className="block text-sm font-medium text-gray-700">Type</label>
-                            <select id="vendor-type" defaultValue={vendorToEdit?.type} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            <label htmlFor="vendor-type" className="block text-sm font-medium text-gray-400">Type</label>
+                            <select id="vendor-type" defaultValue={vendorToEdit?.type} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]">
                                 <option>Broadline</option>
                                 <option>Produce</option>
                                 <option>Specialty</option>
@@ -118,40 +118,40 @@ const AddVendorModal: React.FC<{
                             </select>
                         </div>
                          <div>
-                            <label htmlFor="account-number" className="block text-sm font-medium text-gray-700">Account Number</label>
-                            <input type="text" id="account-number" defaultValue={vendorToEdit?.accountNumber} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            <label htmlFor="account-number" className="block text-sm font-medium text-gray-400">Account Number</label>
+                            <input type="text" id="account-number" defaultValue={vendorToEdit?.accountNumber} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                         </div>
                     </div>
                      <div className="grid grid-cols-3 gap-4">
                          <div className="col-span-1">
-                            <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700">Contact Name</label>
-                            <input type="text" id="contact-name" defaultValue={vendorToEdit?.contact.name} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            <label htmlFor="contact-name" className="block text-sm font-medium text-gray-400">Contact Name</label>
+                            <input type="text" id="contact-name" defaultValue={vendorToEdit?.contact.name} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                          </div>
                          <div className="col-span-2">
-                            <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700">Contact Email</label>
-                            <input type="email" id="contact-email" defaultValue={vendorToEdit?.contact.email} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            <label htmlFor="contact-email" className="block text-sm font-medium text-gray-400">Contact Email</label>
+                            <input type="email" id="contact-email" defaultValue={vendorToEdit?.contact.email} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                          </div>
                     </div>
                      <div>
-                        <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700">Contact Phone</label>
-                        <input type="tel" id="contact-phone" defaultValue={vendorToEdit?.contact.phone} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                        <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-400">Contact Phone</label>
+                        <input type="tel" id="contact-phone" defaultValue={vendorToEdit?.contact.phone} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Order Days</label>
-                        <div className="mt-2 flex space-x-2">
+                        <label className="block text-sm font-medium text-gray-400">Order Days</label>
+                        <div className="mt-2 flex flex-wrap gap-2">
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                                <label key={day} className="flex-1 text-center">
+                                <label key={day} className="flex-1 text-center min-w-[40px]">
                                     <input type="checkbox" defaultChecked={vendorToEdit?.orderDays.includes(day)} className="sr-only peer" />
-                                    <div className="w-full p-2 border rounded-md cursor-pointer text-xs peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600">{day}</div>
+                                    <div className="w-full p-2 border border-[#444444] rounded-md cursor-pointer text-xs peer-checked:bg-[#FF6B6B] peer-checked:text-black peer-checked:border-[#FF6B6B] transition-colors">{day}</div>
                                 </label>
                             ))}
                         </div>
                     </div>
                     <div className="flex justify-end space-x-3 pt-4">
-                        <button onClick={onClose} type="button" className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
+                        <button onClick={onClose} type="button" className="px-4 py-2 text-sm font-medium text-gray-300 bg-transparent border border-[#444444] rounded-md shadow-sm hover:bg-gray-700">
                             Cancel
                         </button>
-                        <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">
+                        <button type="submit" className="px-4 py-2 text-sm font-medium text-black bg-[#FF6B6B] border border-transparent rounded-md shadow-sm hover:bg-[#E85A5A]">
                             {isEditing ? 'Save Changes' : 'Add Supplier'}
                         </button>
                     </div>
@@ -185,11 +185,11 @@ export const VendorsView: React.FC<VendorsViewProps> = ({ vendors: initialVendor
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold text-gray-700">All Suppliers ({vendors.length})</h2>
+        <h2 className="text-lg font-semibold text-gray-300">All Suppliers ({vendors.length})</h2>
         <button
           type="button"
           onClick={handleAddNew}
-          className="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+          className="inline-flex items-center gap-x-1.5 rounded-md bg-[#FF6B6B] px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-[#E85A5A]"
         >
           <PlusIcon className="-ml-0.5 h-5 w-5" />
           Add Supplier
@@ -197,14 +197,14 @@ export const VendorsView: React.FC<VendorsViewProps> = ({ vendors: initialVendor
       </div>
 
       {/* AI Suggestion */}
-      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex items-start mb-6">
-        <CpuChipIcon className="h-6 w-6 text-blue-600 mr-4 flex-shrink-0 mt-1" />
+      <div className="bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 p-4 rounded-lg flex items-start mb-6">
+        <CpuChipIcon className="h-6 w-6 text-[#FF6B6B] mr-4 flex-shrink-0 mt-1" />
         <div>
-            <p className="font-semibold text-blue-900">
+            <p className="font-semibold text-gray-100">
                 I noticed you buy ground beef from both Sysco and US Foods.
             </p>
-            <p className="text-sm text-blue-800 mt-1">
-                Want me to compare their recent prices for you? <a href="#" className="font-bold underline hover:text-blue-600">Yes, show comparison</a>
+            <p className="text-sm text-gray-300 mt-1">
+                Want me to compare their recent prices for you? <a href="#" className="font-bold underline hover:text-[#FF6B6B]">Yes, show comparison</a>
             </p>
         </div>
       </div>

@@ -1,7 +1,5 @@
 import React from 'react';
-// FIX: Corrected import path for types.
 import { Menu, Recipe } from '../types';
-// FIX: Corrected import path for Icons.
 import { PlusIcon } from './Icons';
 
 interface MenusViewProps {
@@ -36,7 +34,7 @@ export const MenusView: React.FC<MenusViewProps> = ({ menus, recipes, onSelectMe
                       </thead>
                       <tbody className="bg-[#2C2C2C] divide-y divide-[#444444]">
                           {menus.map(menu => (
-                              <tr key={menu.id} className="hover:bg-[#444444] cursor-pointer" onClick={() => onSelectMenu(menu)}>
+                              <tr key={menu.id} className="hover:bg-[#444444] transition-colors duration-150 cursor-pointer" onClick={() => onSelectMenu(menu)}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">{menu.name}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{menu.recipeIds.length}</td>
                                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

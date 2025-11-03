@@ -11,9 +11,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
       <button onClick={onMenuClick} className="p-2 rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
         <Bars3Icon className="h-6 w-6" />
       </button>
-      <h1 className="text-lg font-bold ml-4 text-[#FF6B6B]">Bitebytes</h1>
+      <h1 className="text-lg font-bold ml-4 text-[#FF6B6B]">BiteBytes</h1>
     </div>
   );
 };
-
-// FIX: Removed local declaration of Bars3Icon as it was already imported from ./Icons.tsx, causing a conflict.

@@ -6,11 +6,10 @@ import { RecipeFilterPanel } from './RecipeFilterPanel';
 
 interface RecipesViewProps {
   recipes: Recipe[];
-  onAddRecipeClick: () => void;
   onSelectRecipe: (recipe: Recipe) => void;
 }
 
-export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, onAddRecipeClick, onSelectRecipe }) => {
+export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, onSelectRecipe }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -38,7 +37,6 @@ export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, onAddRecipeCl
           </button>
           <button
             type="button"
-            onClick={onAddRecipeClick}
             className="inline-flex items-center gap-x-1.5 rounded-md bg-[#FF6B6B] px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-[#E85A5A]"
           >
             <PlusIcon className="-ml-0.5 h-5 w-5" />

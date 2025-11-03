@@ -16,7 +16,6 @@ import { AddIngredientView } from './AddIngredientView';
 import { MenuDetailView } from './MenuDetailView';
 
 interface RecipeCostingProps {
-  onAddRecipeClick: () => void;
   setCurrentPage: (page: Page) => void;
 }
 
@@ -26,7 +25,7 @@ type ViewState =
   | { view: 'add-ingredient' }
   | { view: 'menu-detail'; menu: Menu };
 
-export const RecipeCosting: React.FC<RecipeCostingProps> = ({ onAddRecipeClick, setCurrentPage }) => {
+export const RecipeCosting: React.FC<RecipeCostingProps> = ({ setCurrentPage }) => {
   const [state, setState] = useState<ViewState>({ view: 'list', filter: 'Recipes' });
   
   const renderContent = () => {
@@ -50,7 +49,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({ onAddRecipeClick, 
     // Default to 'list' view
     switch (state.filter) {
       case 'Recipes':
-        return <RecipesView recipes={recipes} onAddRecipeClick={onAddRecipeClick} onSelectRecipe={(recipe) => setState({ view: 'recipe-detail', recipe })} />;
+        return <RecipesView recipes={recipes} onSelectRecipe={(recipe) => setState({ view: 'recipe-detail', recipe })} />;
       case 'Ingredients':
         return <IngredientsView ingredients={ingredients} onAddIngredientClick={() => setState({ view: 'add-ingredient' })} />;
       case 'Menus':
@@ -64,7 +63,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({ onAddRecipeClick, 
       case 'Vendors':
         return <VendorsView vendors={vendors} />;
       default:
-        return <RecipesView recipes={recipes} onAddRecipeClick={onAddRecipeClick} onSelectRecipe={(recipe) => setState({ view: 'recipe-detail', recipe })} />;
+        return <RecipesView recipes={recipes} onSelectRecipe={(recipe) => setState({ view: 'recipe-detail', recipe })} />;
     }
   };
   
@@ -79,7 +78,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({ onAddRecipeClick, 
   return (
     <div>
       <Header
-        title="Recipe & Ingredient Costing"
+        title="BiteBytes Costing"
         subtitle="Manage all your recipes, ingredients, and associated costs."
       >
           <FilterBar activeFilter={state.filter} onFilterChange={handleFilterChange} />

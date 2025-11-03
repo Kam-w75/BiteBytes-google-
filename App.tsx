@@ -8,12 +8,9 @@ import { OnboardingWelcome } from './components/OnboardingWelcome';
 import { Stats } from './components/Stats';
 import { FoodCostReport } from './components/FoodCostReport';
 import { PriceChangeHistory } from './components/PriceChangeHistory';
-import { VoiceRecipeCreator } from './components/VoiceRecipeCreator';
-import { recipes, ingredients } from './data';
-import { Recipe, Ingredient } from './types';
 import { TargetCosting } from './components/TargetCosting';
 import { ImportExportHub } from './components/ImportExportHub';
-import { AIChat } from './components/AIChat';
+import { LiveAssistant } from './components/LiveAssistant';
 import { MobileHeader } from './components/MobileHeader';
 
 export type Page = 'dashboard' | 'costing' | 'reports' | 'price-history' | 'invoices' | 'nutrition' | 'import-export' | 'settings' | 'help';
@@ -21,9 +18,6 @@ export type Page = 'dashboard' | 'costing' | 'reports' | 'price-history' | 'invo
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [showVoiceCreator, setShowVoiceCreator] = useState(false);
-  const [allRecipes, setAllRecipes] = useState<Recipe[]>(recipes);
-  const [allIngredients, setAllIngredients] = useState<Ingredient[]>(ingredients);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
@@ -32,7 +26,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Stats />;
       case 'costing':
-        return <RecipeCosting onAddRecipeClick={() => setShowVoiceCreator(true)} setCurrentPage={setCurrentPage} />;
+        return <RecipeCosting setCurrentPage={setCurrentPage} />;
       case 'reports':
         return <FoodCostReport />;
       case 'price-history':
@@ -50,14 +44,6 @@ const App: React.FC = () => {
       default:
         return <Stats />;
     }
-  };
-
-  const handleRecipeCreate = (newRecipe: Omit<Recipe, 'id'>) => {
-    const recipeWithId: Recipe = { ...newRecipe, id: `r${allRecipes.length + 1}` };
-    setAllRecipes(prev => [...prev, recipeWithId]);
-    setShowVoiceCreator(false);
-    // You might want to navigate to the new recipe's detail page or costing page
-    setCurrentPage('costing');
   };
 
   if (showOnboarding) {
@@ -78,8 +64,7 @@ const App: React.FC = () => {
           {renderPage()}
         </div>
       </main>
-      <AIChat recipes={allRecipes} ingredients={allIngredients} />
-      {showVoiceCreator && <VoiceRecipeCreator onClose={() => setShowVoiceCreator(false)} onRecipeCreate={handleRecipeCreate} />}
+      <LiveAssistant />
     </div>
   );
 };

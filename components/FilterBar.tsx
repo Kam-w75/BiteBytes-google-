@@ -33,7 +33,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ activeFilter, onFilterChan
                 >
                     {filter.icon}
                     <span>{filter.name}</span>
-                    {filter.count !== null && <span className="ml-1.5 rounded-full bg-gray-600 px-1.5 text-xs font-semibold text-gray-100">{filter.count}</span>}
+                    {filter.count !== null && <span className="ml-1.5 rounded-full bg-black/20 px-1.5 text-xs font-semibold text-white">{filter.count}</span>}
                     {filter.locked && <span className="ml-1.5">🔒</span>}
                 </button>
             ))}
