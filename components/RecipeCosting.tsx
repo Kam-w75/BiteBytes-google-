@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Page } from '../App';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Page, CostingInitialState } from '../App';
 import { Header } from './Header';
 import { FilterBar } from './FilterBar';
 import { RecipesView } from './RecipesView';
@@ -16,7 +16,7 @@ import { MenuDetailView } from './MenuDetailView';
 import { menus, recipeBooks, docs, purchases } from '../data';
 import { Recipe, Menu, Ingredient, Vendor } from '../types';
 
-type CostingView = 
+export type CostingView = 
   | 'list' 
   | 'recipe-detail' 
   | 'menu-detail' 
@@ -35,6 +35,8 @@ interface RecipeCostingProps {
     onSaveRecipe: (recipe: Recipe) => void;
     onSaveVendor: (vendor: Vendor) => void;
     onDeleteVendor: (vendorId: string) => void;
+    initialState: CostingInitialState | null;
+    onInitialStateConsumed: () => void;
 }
 
 export const RecipeCosting: React.FC<RecipeCostingProps> = ({ 
@@ -46,7 +48,9 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     onUpdateIngredient,
     onSaveRecipe,
     onSaveVendor,
-    onDeleteVendor
+    onDeleteVendor,
+    initialState,
+    onInitialStateConsumed
 }) => {
     const [activeFilter, setActiveFilter] = useState('Ingredients');
     const [view, setView] = useState<CostingView>('list');
@@ -55,10 +59,10 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
-    const handleSelectRecipe = (recipe: Recipe) => {
+    const handleSelectRecipe = useCallback((recipe: Recipe) => {
         setSelectedRecipe(recipe);
         setView('recipe-detail');
-    };
+    }, []);
     
     const handleSelectIngredient = (ingredient: Ingredient) => {
         setSelectedIngredient(ingredient);
@@ -80,8 +84,16 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     
     const handleBack = handleBackToList('Recipes');
 
-    const handleAddRecipeClick = () => setView('add-recipe');
+    const handleAddRecipeClick = useCallback(() => {
+        setSelectedRecipe(null);
+        setView('add-recipe');
+    }, []);
     const handleAddIngredientClick = () => setView('add-ingredient');
+    
+    const handleEditRecipeClick = (recipe: Recipe) => {
+        setSelectedRecipe(recipe);
+        setView('edit-recipe');
+    };
     
     const handleSaveRecipe = (newRecipe: Recipe) => {
         onSaveRecipe(newRecipe);
@@ -92,20 +104,36 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
         if (ingredientData.id) {
             onUpdateIngredient(ingredientData as Ingredient);
         } else {
-            onAddNewIngredients([ingredientData as Omit<Ingredient, 'id' | 'usedInRecipes'>]);
+            onAddNewIngredients([ingredientData as Omit<Ingredient, 'id' | 'usedInRecipes' | 'priceTrend'>]);
         }
         handleBackToList('Ingredients')();
     };
+
+    useEffect(() => {
+        if (initialState) {
+            if (initialState.view === 'recipe-detail' && initialState.recipeId) {
+                const recipeToSelect = recipes.find(r => r.id === initialState.recipeId);
+                if (recipeToSelect) {
+                    handleSelectRecipe(recipeToSelect);
+                }
+            } else if (initialState.view === 'add-recipe') {
+                handleAddRecipeClick();
+            }
+            onInitialStateConsumed();
+        }
+    }, [initialState, recipes, onInitialStateConsumed, handleSelectRecipe, handleAddRecipeClick]);
 
 
     const renderContent = () => {
         switch (view) {
             case 'recipe-detail':
-                return selectedRecipe && <RecipeDetailView recipe={selectedRecipe} allIngredients={ingredients} onBack={handleBack} />;
+                return selectedRecipe && <RecipeDetailView recipe={selectedRecipe} allIngredients={ingredients} onBack={handleBack} onEdit={handleEditRecipeClick} />;
             case 'menu-detail':
                 return selectedMenu && <MenuDetailView menu={selectedMenu} recipes={recipes} allIngredients={ingredients} onBack={handleBack} onSelectRecipe={handleSelectRecipe} />;
             case 'add-recipe':
                 return <AddRecipeView onBack={handleBack} onSave={handleSaveRecipe} allIngredients={ingredients} />;
+             case 'edit-recipe':
+                return <AddRecipeView onBack={handleBack} onSave={handleSaveRecipe} allIngredients={ingredients} recipeToEdit={selectedRecipe} />;
             case 'add-ingredient':
                 return <AddIngredientView onBack={handleBackToList('Ingredients')} onSave={handleSaveIngredient} vendors={vendors} />;
             case 'edit-ingredient':

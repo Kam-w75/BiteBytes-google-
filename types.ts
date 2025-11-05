@@ -147,3 +147,17 @@ export interface PurchaseOrder {
     vendorName: string;
     items: PurchaseOrderItem[];
 }
+
+export interface NutritionData {
+    calories: number;
+    totalFat: string;
+    saturatedFat: string;
+    transFat: string;
+    cholesterol: string;
+    sodium: string;
+    totalCarbohydrate: string;
+    dietaryFiber: string;
+    totalSugars: string;
+    protein: string;
+    allergens: string[];
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { RecipeCosting } from './components/RecipeCosting';
+import { RecipeCosting, CostingView } from './components/RecipeCosting';
 import { InvoiceScanner } from './components/InvoiceScanner';
 import { NutritionInfo } from './components/NutritionInfo';
 import { HelpDocs } from './components/HelpDocs';
@@ -8,7 +8,7 @@ import { OnboardingWelcome } from './components/OnboardingWelcome';
 import { Stats } from './components/Stats';
 import { FoodCostReport } from './components/FoodCostReport';
 import { PriceChangeHistory } from './components/PriceChangeHistory';
-import { TargetCosting } from './components/TargetCosting';
+import { Settings } from './components/TargetCosting';
 import { ImportExportHub } from './components/ImportExportHub';
 import { LiveAssistant } from './components/LiveAssistant';
 import { MobileHeader } from './components/MobileHeader';
@@ -18,10 +18,16 @@ import { Ingredient, Recipe, Vendor } from './types';
 
 export type Page = 'dashboard' | 'costing' | 'ordering' | 'reports' | 'price-history' | 'invoices' | 'nutrition' | 'import-export' | 'settings' | 'help';
 
+export interface CostingInitialState {
+  view: CostingView;
+  recipeId?: string;
+}
+
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('costing');
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [costingInitialState, setCostingInitialState] = useState<CostingInitialState | null>(null);
   
   // --- Persistent State Management ---
   const [ingredients, setIngredients] = useState<Ingredient[]>(() => {
@@ -107,11 +113,32 @@ const App: React.FC = () => {
   const handleDeleteVendor = (vendorId: string) => {
     setVendors(prev => prev.filter(v => v.id !== vendorId));
   };
+  
+  const handleResetData = () => {
+    window.localStorage.removeItem('bitebytes-ingredients');
+    window.localStorage.removeItem('bitebytes-recipes');
+    window.localStorage.removeItem('bitebytes-vendors');
+    // Reload the page to ensure all state is reset cleanly
+    window.location.reload();
+  };
+  
+  const handleNavigate = (page: Page, state?: any) => {
+    if (page === 'costing' && state) {
+        setCostingInitialState(state);
+    } else if (costingInitialState) {
+        setCostingInitialState(null);
+    }
+    setCurrentPage(page);
+  };
+
+  const handleCostingStateConsumed = () => {
+    setCostingInitialState(null);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Stats />;
+        return <Stats onNavigate={handleNavigate} />;
       case 'costing':
         return <RecipeCosting 
           setCurrentPage={setCurrentPage} 
@@ -123,25 +150,27 @@ const App: React.FC = () => {
           onSaveRecipe={handleSaveRecipe}
           onSaveVendor={handleSaveVendor}
           onDeleteVendor={handleDeleteVendor}
+          initialState={costingInitialState}
+          onInitialStateConsumed={handleCostingStateConsumed}
         />;
       case 'ordering':
         return <OrderingView />;
       case 'reports':
-        return <FoodCostReport />;
+        return <FoodCostReport recipes={recipes} ingredients={ingredients} />;
       case 'price-history':
         return <PriceChangeHistory recipes={recipes} ingredients={ingredients} />;
       case 'invoices':
         return <InvoiceScanner onAddNewIngredients={handleAddNewIngredients} vendors={vendors} />;
       case 'nutrition':
-        return <NutritionInfo />;
+        return <NutritionInfo recipes={recipes} />;
       case 'import-export':
-        return <ImportExportHub />;
+        return <ImportExportHub ingredients={ingredients} recipes={recipes} vendors={vendors} />;
       case 'settings':
-        return <TargetCosting />;
+        return <Settings onResetData={handleResetData} />;
       case 'help':
         return <HelpDocs />;
       default:
-        return <Stats />;
+        return <Stats onNavigate={handleNavigate} />;
     }
   };
 
@@ -153,7 +182,7 @@ const App: React.FC = () => {
     <div className="flex h-screen bg-[#1E1E1E] font-sans text-gray-200">
       <Sidebar 
         currentPage={currentPage} 
-        setCurrentPage={setCurrentPage} 
+        setCurrentPage={handleNavigate} 
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />

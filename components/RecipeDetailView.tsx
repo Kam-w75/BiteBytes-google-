@@ -16,6 +16,7 @@ interface RecipeDetailViewProps {
   recipe: Recipe;
   allIngredients: Ingredient[];
   onBack: () => void;
+  onEdit: (recipe: Recipe) => void;
 }
 
 const MetricCard: React.FC<{ title: string; value: string; subValue?: string; trend?: string; trendColor?: string; }> = ({ title, value, subValue, trend, trendColor = 'text-gray-400' }) => (
@@ -46,7 +47,7 @@ const CollapsibleSection: React.FC<{ title: string; children: React.ReactNode }>
     );
 };
 
-export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allIngredients, onBack }) => {
+export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allIngredients, onBack, onEdit }) => {
   const [instructionsVisible, setInstructionsVisible] = useState(false);
 
   const ingredientsMap = useMemo(() => 
@@ -119,7 +120,7 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allI
             <button className="p-2 text-gray-400 hover:bg-gray-700 rounded-md">
               <ArrowUpOnSquareIcon className="h-5 w-5" />
             </button>
-            <button className="p-2 text-gray-400 hover:bg-gray-700 rounded-md">
+            <button onClick={() => onEdit(recipe)} className="p-2 text-gray-400 hover:bg-gray-700 rounded-md">
               <PencilIcon className="h-5 w-5" />
             </button>
           </div>

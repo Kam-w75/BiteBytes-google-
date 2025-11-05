@@ -10,6 +10,47 @@
       body {
         font-family: 'Inter', sans-serif;
       }
+      @media print {
+        body, html {
+            background-color: white !important;
+        }
+        .no-print {
+            display: none !important;
+        }
+        /* Hide UI chrome */
+        div[class*="fixed inset-y-0 left-0"], /* Sidebar */
+        div[class*="MobileHeader"],
+        div[class*="LiveAssistant"] {
+            display: none !important;
+        }
+        
+        /* Reset main layout for printing */
+        #root > div { display: block !important; height: auto !important; }
+        main { overflow: visible !important; height: auto !important; width: 100% !important; }
+        
+        /* Style report content for printing */
+        div[class*="p-6"] { padding: 0 !important; }
+        
+        div[class*="bg-"], div[class*="border-"], table, th, td {
+            background-color: transparent !important;
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+        }
+
+        h1, h2, h3, h4, p, span, th, td, div, li, ol, ul, a {
+             color: black !important;
+        }
+
+        /* Chart/Graph styles */
+        svg path[fill] { fill: #eee !important; }
+        svg path[stroke], svg line[stroke] { stroke: #333 !important; }
+        svg text { fill: #333 !important; }
+        
+        /* Table page breaks */
+        table { page-break-inside: auto; }
+        tr    { page-break-inside: avoid; page-break-after: auto; }
+        thead { display: table-header-group; }
+      }
     </style>
   <script type="importmap">
 {

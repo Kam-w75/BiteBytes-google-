@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Header } from './Header';
-import { recipes, foodCostHistory, ingredients as allIngredients } from '../data';
-import { Ingredient } from '../types';
+import { foodCostHistory } from '../data';
+import { Ingredient, Recipe, RecipeIngredient } from '../types';
+import { RecipeProfitabilityReport } from './RecipeProfitabilityReport';
+import { downloadFile, arrayToCsv } from '../utils';
 
 const CATEGORY_COLORS: { [key in Ingredient['category']]: string } = {
     'Meat': '#f87171', // red-400
@@ -12,25 +14,6 @@ const CATEGORY_COLORS: { [key in Ingredient['category']]: string } = {
     'Canned': '#a78bfa', // violet-400
     'Beverages': '#22d3ee', // cyan-400
     'Other': '#94a3b8', // slate-400
-};
-
-const DateSelector: React.FC<{ selected: string, onSelect: (range: string) => void }> = ({ selected, onSelect }) => {
-    const ranges = ['Week', 'Month', 'Quarter', 'Custom'];
-    return (
-        <div className="flex items-center space-x-1 bg-[#2C2C2C] p-1 rounded-lg">
-            {ranges.map(range => (
-                <button
-                    key={range}
-                    onClick={() => onSelect(range)}
-                    className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${
-                        selected === range ? 'bg-[#1E1E1E] text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-200'
-                    }`}
-                >
-                    {range}
-                </button>
-            ))}
-        </div>
-    );
 };
 
 const Gauge: React.FC<{ value: number, target: number }> = ({ value, target }) => {
@@ -49,7 +32,7 @@ const Gauge: React.FC<{ value: number, target: number }> = ({ value, target }) =
                     d="M 10 50 A 40 40 0 0 1 90 50" 
                     fill="none" 
                     strokeWidth="10" 
-                    className={`${color} transition-all duration-500`}
+                    className={`${color} transition-all duration-500 gauge-arc-path`}
                     strokeDasharray={`${(angle/180) * 125.6} 125.6`}
                 />
             </svg>
@@ -111,27 +94,32 @@ const LineGraph: React.FC<{ data: { week: number, costPercentage: number }[], ta
     );
 };
 
-export const FoodCostReport: React.FC = () => {
-    const [dateRange, setDateRange] = useState('Month');
+interface ReportPanelProps {
+    recipes: Recipe[];
+    ingredients: Ingredient[];
+}
+
+const FoodCostReportPanel: React.FC<ReportPanelProps> = ({ recipes, ingredients }) => {
     const targetFoodCost = 30.0;
 
     const reportData = useMemo(() => {
-        const ingredientsMap = new Map(allIngredients.map(i => [i.id, i]));
+        // FIX: Add explicit types to Map and reduce functions to prevent potential 'unknown' type inference issues.
+        const ingredientsMap = new Map<string, Ingredient>(ingredients.map((i: Ingredient) => [i.id, i]));
 
-        const totalCostOfGoods = recipes.reduce((total, recipe) => {
-            return total + recipe.ingredients.reduce((recipeTotal, ing) => {
+        const totalCostOfGoods = recipes.reduce((total: number, recipe: Recipe) => {
+            return total + recipe.ingredients.reduce((recipeTotal: number, ing: RecipeIngredient) => {
                  const masterIngredient = ingredientsMap.get(ing.id);
                  const cost = masterIngredient ? masterIngredient.cost : 0;
-                 return recipeTotal + cost * ing.quantity;
+                 return recipeTotal + (cost * ing.quantity);
             }, 0);
         }, 0);
 
-        const totalRevenue = recipes.reduce((total, recipe) => total + recipe.menuPrice * recipe.servings, 0);
+        const totalRevenue = recipes.reduce((total: number, recipe: Recipe) => total + recipe.menuPrice * recipe.servings, 0);
         const overallFoodCostPercent = totalRevenue > 0 ? (totalCostOfGoods / totalRevenue) * 100 : 0;
         
         const categoryCosts: { [key: string]: number } = {};
-        recipes.forEach(recipe => {
-            recipe.ingredients.forEach(ing => {
+        recipes.forEach((recipe: Recipe) => {
+            recipe.ingredients.forEach((ing: RecipeIngredient) => {
                 const masterIngredient = ingredientsMap.get(ing.id);
                 if (masterIngredient) {
                     const cost = masterIngredient.cost * ing.quantity;
@@ -143,7 +131,8 @@ export const FoodCostReport: React.FC = () => {
         const categoryBreakdown = Object.entries(categoryCosts).map(([name, value]) => ({
             name,
             value,
-            percent: (value / totalCostOfGoods) * 100,
+            percent: totalCostOfGoods > 0 ? (value / totalCostOfGoods) * 100 : 0,
+            // FIX: Cast 'name' to Ingredient['category'] to ensure type safety when accessing CATEGORY_COLORS.
             color: CATEGORY_COLORS[name as Ingredient['category']] || '#94a3b8'
         })).sort((a,b) => b.value - a.value);
 
@@ -153,79 +142,158 @@ export const FoodCostReport: React.FC = () => {
             topDrivers: categoryBreakdown,
             totalCostOfGoods,
         };
-    }, [recipes, allIngredients]);
+    }, [recipes, ingredients]);
 
     const difference = reportData.overallFoodCostPercent - targetFoodCost;
 
-    return (
-        <div className="bg-[#1E1E1E] min-h-screen">
-            <Header
-                title="Food Cost Report"
-                subtitle="An overview of your food costs and profitability."
-            >
-                <DateSelector selected={dateRange} onSelect={setDateRange} />
-            </Header>
+    const handleExport = (format: 'csv' | 'pdf') => {
+        if (format === 'pdf') {
+            window.print();
+            return;
+        }
+        
+        const summaryData = [
+            { key: 'Report Type', value: 'Overall Food Cost' },
+            { key: 'Overall Food Cost %', value: `${reportData.overallFoodCostPercent.toFixed(1)}%` },
+            { key: 'Target Food Cost %', value: `${targetFoodCost.toFixed(1)}%` },
+            { key: 'Total Cost of Goods', value: `$${reportData.totalCostOfGoods.toFixed(2)}` },
+        ];
+        
+        const categoryData = reportData.categoryBreakdown.map(cat => ({
+            Category: cat.name,
+            'Cost ($)': cat.value.toFixed(2),
+            'Percentage of Total Cost (%)': cat.percent.toFixed(1),
+        }));
 
-            <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444] text-center">
-                            <h3 className="text-lg font-semibold text-gray-200">Overall Food Cost</h3>
-                            <Gauge value={reportData.overallFoodCostPercent} target={targetFoodCost} />
-                            <p className="text-5xl font-bold text-gray-100 -mt-8">{reportData.overallFoodCostPercent.toFixed(1)}%</p>
-                            <p className="text-sm text-gray-400 mt-2">Target: {targetFoodCost.toFixed(1)}%</p>
-                            <p className={`text-sm font-semibold mt-1 ${difference > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                {difference > 0 ? '+' : ''}{difference.toFixed(1)}% ({difference > 0 ? 'needs attention' : 'on track'})
-                            </p>
-                        </div>
-                        <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
-                            <h3 className="text-lg font-semibold text-gray-200 mb-4">Breakdown by Category</h3>
-                            <div className="flex flex-col md:flex-row items-center gap-4">
-                                <PieChart data={reportData.categoryBreakdown} />
-                                <div className="space-y-2 text-sm">
-                                    {reportData.categoryBreakdown.map(cat => (
-                                        <div key={cat.name} className="flex items-center">
-                                            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: cat.color }}></div>
-                                            <span className="font-medium text-gray-400">{cat.name}:</span>
-                                            <span className="ml-auto font-semibold text-gray-200">{cat.percent.toFixed(1)}%</span>
-                                        </div>
-                                    ))}
-                                </div>
+        const summaryCsv = arrayToCsv(summaryData);
+        const categoryCsv = arrayToCsv(categoryData);
+        
+        const csvContent = `${summaryCsv}\n\n${categoryCsv}`;
+        
+        downloadFile(csvContent, 'food_cost_report.csv', 'text/csv;charset=utf-8;');
+    };
+
+    const handleEmail = () => {
+        const subject = "Chef's Edge - Food Cost Report";
+        const body = `
+Hi Team,
+
+Here is the latest food cost report:
+
+- Overall Food Cost: ${reportData.overallFoodCostPercent.toFixed(1)}%
+- Target Food Cost: ${targetFoodCost.toFixed(1)}%
+- Total Cost of Goods: $${reportData.totalCostOfGoods.toFixed(2)}
+
+Top Cost Drivers by Category:
+${reportData.topDrivers.map(d => `- ${d.name}: ${d.percent.toFixed(1)}%`).join('\n')}
+
+Generated from Chef's Edge.
+        `.trim().replace(/^\s+/gm, '');
+
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
+    };
+
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444] text-center">
+                        <h3 className="text-lg font-semibold text-gray-200">Overall Food Cost</h3>
+                        <Gauge value={reportData.overallFoodCostPercent} target={targetFoodCost} />
+                        <p className="text-5xl font-bold text-gray-100 -mt-8">{reportData.overallFoodCostPercent.toFixed(1)}%</p>
+                        <p className="text-sm text-gray-400 mt-2">Target: {targetFoodCost.toFixed(1)}%</p>
+                        <p className={`text-sm font-semibold mt-1 ${difference > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            {difference > 0 ? '+' : ''}{difference.toFixed(1)}% ({difference > 0 ? 'needs attention' : 'on track'})
+                        </p>
+                    </div>
+                    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+                        <h3 className="text-lg font-semibold text-gray-200 mb-4">Breakdown by Category</h3>
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <PieChart data={reportData.categoryBreakdown} />
+                            <div className="space-y-2 text-sm">
+                                {reportData.categoryBreakdown.map(cat => (
+                                    <div key={cat.name} className="flex items-center">
+                                        <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: cat.color }}></div>
+                                        <span className="font-medium text-gray-400">{cat.name}:</span>
+                                        <span className="ml-auto font-semibold text-gray-200">{cat.percent.toFixed(1)}%</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Column */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
-                            <h3 className="text-lg font-semibold text-gray-200 mb-4">Top Cost Drivers</h3>
-                            <ul className="space-y-3">
-                                {reportData.topDrivers.map(driver => (
-                                    <li key={driver.name}>
-                                        <div className="flex justify-between items-center text-sm">
-                                            <p className="font-medium text-gray-200">{driver.name}</p>
-                                            <p className="font-semibold text-gray-300">${driver.value.toFixed(2)} <span className="text-xs text-gray-500">({driver.percent.toFixed(0)}%)</span></p>
-                                        </div>
-                                        <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                                            <div className="h-2 rounded-full" style={{ width: `${driver.percent}%`, backgroundColor: driver.color }}></div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                         <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
-                            <h3 className="text-lg font-semibold text-gray-200 mb-4">Food Cost % Trend (Last 12 Weeks)</h3>
-                            <LineGraph data={foodCostHistory} target={targetFoodCost} />
-                        </div>
+                </div>
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+                        <h3 className="text-lg font-semibold text-gray-200 mb-4">Top Cost Drivers</h3>
+                        <ul className="space-y-3">
+                            {reportData.topDrivers.map(driver => (
+                                <li key={driver.name}>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <p className="font-medium text-gray-200">{driver.name}</p>
+                                        <p className="font-semibold text-gray-300">${driver.value.toFixed(2)} <span className="text-xs text-gray-500">({driver.percent.toFixed(0)}%)</span></p>
+                                    </div>
+                                    <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
+                                        <div className="h-2 rounded-full" style={{ width: `${driver.percent}%`, backgroundColor: driver.color }}></div>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                     <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+                        <h3 className="text-lg font-semibold text-gray-200 mb-4">Food Cost % Trend (Last 12 Weeks)</h3>
+                        <LineGraph data={foodCostHistory} target={targetFoodCost} />
                     </div>
                 </div>
+            </div>
+            <div className="pt-4 flex justify-end items-center space-x-3 no-print">
+                <button onClick={() => handleExport('pdf')} className="px-4 py-2 text-sm font-medium text-gray-300 bg-[#2C2C2C] border border-[#444444] rounded-md shadow-sm hover:bg-[#444444]">Export PDF</button>
+                <button onClick={() => handleExport('csv')} className="px-4 py-2 text-sm font-medium text-gray-300 bg-[#2C2C2C] border border-[#444444] rounded-md shadow-sm hover:bg-[#444444]">Export Excel</button>
+                <button onClick={handleEmail} className="px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">Email to Accountant</button>
+            </div>
+        </div>
+    );
+};
 
-                <div className="pt-4 flex justify-end items-center space-x-3">
-                    <button className="px-4 py-2 text-sm font-medium text-gray-300 bg-[#2C2C2C] border border-[#444444] rounded-md shadow-sm hover:bg-[#444444]">Export PDF</button>
-                    <button className="px-4 py-2 text-sm font-medium text-gray-300 bg-[#2C2C2C] border border-[#444444] rounded-md shadow-sm hover:bg-[#444444]">Export Excel</button>
-                    <button className="px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">Email to Accountant</button>
-                </div>
+type ReportViewType = 'food-cost' | 'profitability';
+
+const ReportSelector: React.FC<{ selected: ReportViewType, onSelect: (view: ReportViewType) => void }> = ({ selected, onSelect }) => {
+    const views = [
+        { id: 'food-cost', name: 'Overall Food Cost' },
+        { id: 'profitability', name: 'Recipe Profitability' }
+    ];
+    return (
+        <div className="flex items-center space-x-1 bg-[#1E1E1E] p-1 rounded-lg border border-[#444444] no-print">
+            {views.map(view => (
+                <button
+                    key={view.id}
+                    onClick={() => onSelect(view.id as ReportViewType)}
+                    className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
+                        selected === view.id ? 'bg-[#2C2C2C] text-gray-100 shadow-sm' : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                >
+                    {view.name}
+                </button>
+            ))}
+        </div>
+    );
+};
+
+export const FoodCostReport: React.FC<ReportPanelProps> = ({ recipes, ingredients }) => {
+    const [currentView, setCurrentView] = useState<ReportViewType>('food-cost');
+
+    return (
+        <div className="bg-[#1E1E1E] min-h-screen">
+             <Header
+                title="Reports Center"
+                subtitle="Analyze your kitchen's performance from every angle."
+            >
+                <ReportSelector selected={currentView} onSelect={setCurrentView} />
+            </Header>
+            <div className="p-6">
+                {currentView === 'food-cost' && <FoodCostReportPanel recipes={recipes} ingredients={ingredients} />}
+                {currentView === 'profitability' && <RecipeProfitabilityReport recipes={recipes} ingredients={ingredients} />}
             </div>
         </div>
     );

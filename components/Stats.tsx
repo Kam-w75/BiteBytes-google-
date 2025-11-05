@@ -13,6 +13,7 @@ import {
     ArrowPathIcon,
     SparklesIcon
 } from './Icons';
+import { Page } from '../App';
 
 // Helper to get the right icon for an insight
 const getInsightIcon = (type: InsightType) => {
@@ -28,12 +29,18 @@ const getInsightIcon = (type: InsightType) => {
     }
 };
 
-const TopPriorityCard: React.FC = () => (
+interface StatsProps {
+    onNavigate: (page: Page, state?: any) => void;
+}
+
+const TopPriorityCard: React.FC<{ onNavigate: StatsProps['onNavigate'] }> = ({ onNavigate }) => (
     <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-lg border border-[#444444]">
         <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide">Top Priority</h3>
         <p className="mt-2 text-2xl font-bold text-gray-100">⚠️ Your food cost jumped to 34% this week (target: 30%)</p>
         <p className="mt-1 text-base text-gray-300">The biggest drivers: Beef +$312, Produce +$147</p>
-        <button className="mt-4 px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
+        <button 
+            onClick={() => onNavigate('reports')}
+            className="mt-4 px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
             See Details
         </button>
     </div>
@@ -58,7 +65,7 @@ const KeyMetric: React.FC<{ label: string; value: string; change?: string; chang
     );
 };
 
-const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
+const InsightCard: React.FC<{ insight: Insight, onNavigate: StatsProps['onNavigate'] }> = ({ insight, onNavigate }) => {
     const baseColor =
         insight.type === InsightType.Warning ? 'red' :
         insight.type === InsightType.Opportunity ? 'red' : 'green';
@@ -75,6 +82,20 @@ const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
         insight.type === InsightType.Opportunity 
         ? 'bg-[#FF6B6B] text-black font-semibold hover:bg-[#E85A5A]' 
         : `bg-${baseColor}-600 text-white hover:bg-${baseColor}-700`;
+    
+    const handleAction = () => {
+        switch (insight.id) {
+            case 'i1': // Review Burger Price
+                onNavigate('costing', { view: 'recipe-detail', recipeId: 'r1' });
+                break;
+            case 'i2': // Create a Special
+                onNavigate('costing', { view: 'add-recipe' });
+                break;
+            case 'i3': // View Recipe
+                onNavigate('costing', { view: 'recipe-detail', recipeId: 'r2' });
+                break;
+        }
+    };
 
     return (
         <div className={`bg-[#2C2C2C] border border-[#444444] ${borderColor} border-l-4 p-4 rounded-lg flex flex-col`}>
@@ -83,7 +104,7 @@ const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
             </div>
             <p className="mt-2 text-sm text-gray-300 flex-grow">{insight.explanation}</p>
             <div className="mt-4 text-right">
-                <button className={`px-3 py-1.5 text-sm rounded-md shadow-sm ${buttonClasses}`}>
+                <button onClick={handleAction} className={`px-3 py-1.5 text-sm rounded-md shadow-sm ${buttonClasses}`}>
                     {insight.actionText}
                 </button>
             </div>
@@ -182,7 +203,7 @@ const WasteReductionAssistant: React.FC = () => {
     );
 }
 
-export const Stats: React.FC = () => {
+export const Stats: React.FC<StatsProps> = ({ onNavigate }) => {
     return (
         <div className="bg-[#1E1E1E] min-h-screen">
             <Header
@@ -190,7 +211,7 @@ export const Stats: React.FC = () => {
                 subtitle="What matters most right now"
             />
             <div className="p-6 space-y-8">
-                <TopPriorityCard />
+                <TopPriorityCard onNavigate={onNavigate} />
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <KeyMetric label="Food Cost % (Week)" value="34.1%" change="+4.1%" changeType="increase" />
@@ -204,7 +225,7 @@ export const Stats: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <WasteReductionAssistant />
                         {insights.map(insight => (
-                            <InsightCard key={insight.id} insight={insight} />
+                            <InsightCard key={insight.id} insight={insight} onNavigate={onNavigate} />
                         ))}
                     </div>
                 </div>
