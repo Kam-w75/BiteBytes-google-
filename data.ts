@@ -1,4 +1,6 @@
-import { Recipe, Ingredient, Menu, RecipeBook, Doc, PurchaseItem, Vendor, Insight, InsightType, PriceChangeEntry } from './types';
+// FIX: Import InsightType as a value, as it is an enum used for values, not just a type.
+import type { Recipe, Ingredient, Menu, RecipeBook, Doc, PurchaseItem, Vendor, Insight, PriceChangeEntry } from './types';
+import { InsightType } from './types';
 
 export const vendors: Vendor[] = [
     { 
@@ -42,16 +44,16 @@ export const vendors: Vendor[] = [
 ];
 
 export const ingredients: Ingredient[] = [
-    { id: 'ing1', name: 'Ground Beef 80/20', cost: 4.50, unit: 'lb', supplier: 'Sysco', usedInRecipes: 2, priceTrend: 0.12, category: 'Meat' },
-    { id: 'ing2', name: 'Brioche Buns', cost: 0.80, unit: 'each', supplier: 'US Foods', usedInRecipes: 1, priceTrend: 0.05, category: 'Dry Goods' },
-    { id: 'ing3', name: 'Cheddar Cheese, Sliced', cost: 3.20, unit: 'lb', supplier: 'Sysco', usedInRecipes: 1, priceTrend: -0.02, category: 'Dairy' },
-    { id: 'ing4', name: 'Tomatoes, Roma', cost: 1.50, unit: 'lb', supplier: 'Local Farms Co-op', usedInRecipes: 3, priceTrend: 0.25, category: 'Produce' },
-    { id: 'ing5', name: 'Lettuce, Iceberg', cost: 1.20, unit: 'head', supplier: 'Local Farms Co-op', usedInRecipes: 2, priceTrend: 0, category: 'Produce' },
-    { id: 'ing6', name: 'All-Purpose Flour', cost: 0.40, unit: 'lb', supplier: 'US Foods', usedInRecipes: 5, priceTrend: -0.05, category: 'Dry Goods' },
-    { id: 'ing7', name: 'Chicken Breast, Boneless', cost: 3.80, unit: 'lb', supplier: 'Sysco', usedInRecipes: 2, priceTrend: 0.08, category: 'Meat' },
-    { id: 'ing8', name: 'Avocado', cost: 1.10, unit: 'each', supplier: 'Local Farms Co-op', usedInRecipes: 1, priceTrend: 0.15, category: 'Produce' },
-    { id: 'ing9', name: 'Salt, Kosher', cost: 0.90, unit: 'lb', supplier: 'Sysco', usedInRecipes: 10, priceTrend: 0, category: 'Spices' },
-    { id: 'ing10', name: 'Olive Oil', cost: 12.00, unit: 'gallon', supplier: 'US Foods', usedInRecipes: 8, priceTrend: 0.03, category: 'Dry Goods' },
+    { id: 'ing1', name: 'Ground Beef 80/20', cost: 4.50, unit: 'lb', vendorId: 'v1', usedInRecipes: 2, priceTrend: 0.12, category: 'Meat' },
+    { id: 'ing2', name: 'Brioche Buns', cost: 0.80, unit: 'each', vendorId: 'v2', usedInRecipes: 1, priceTrend: 0.05, category: 'Dry Goods' },
+    { id: 'ing3', name: 'Cheddar Cheese, Sliced', cost: 3.20, unit: 'lb', vendorId: 'v1', usedInRecipes: 1, priceTrend: -0.02, category: 'Dairy' },
+    { id: 'ing4', name: 'Tomatoes, Roma', cost: 1.50, unit: 'lb', vendorId: 'v3', usedInRecipes: 3, priceTrend: 0.25, category: 'Produce' },
+    { id: 'ing5', name: 'Lettuce, Iceberg', cost: 1.20, unit: 'head', vendorId: 'v3', usedInRecipes: 2, priceTrend: 0, category: 'Produce' },
+    { id: 'ing6', name: 'All-Purpose Flour', cost: 0.40, unit: 'lb', vendorId: 'v2', usedInRecipes: 5, priceTrend: -0.05, category: 'Dry Goods' },
+    { id: 'ing7', name: 'Chicken Breast, Boneless', cost: 3.80, unit: 'lb', vendorId: 'v1', usedInRecipes: 2, priceTrend: 0.08, category: 'Meat' },
+    { id: 'ing8', name: 'Avocado', cost: 1.10, unit: 'each', vendorId: 'v3', usedInRecipes: 1, priceTrend: 0.15, category: 'Produce' },
+    { id: 'ing9', name: 'Salt, Kosher', cost: 0.90, unit: 'lb', vendorId: 'v1', usedInRecipes: 10, priceTrend: 0, category: 'Spices' },
+    { id: 'ing10', name: 'Olive Oil', cost: 12.00, unit: 'gallon', vendorId: 'v2', usedInRecipes: 8, priceTrend: 0.03, category: 'Dry Goods' },
 ];
 
 export const recipes: Recipe[] = [
@@ -63,11 +65,11 @@ export const recipes: Recipe[] = [
         laborTimeMinutes: 10,
         imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1998&auto=format&fit=crop',
         ingredients: [
-            { id: 'ing1', name: 'Ground Beef 80/20', quantity: 1, unit: 'lb', cost: 4.50, priceTrend: 0.12 },
-            { id: 'ing2', name: 'Brioche Buns', quantity: 4, unit: 'each', cost: 0.80, priceTrend: 0.05 },
-            { id: 'ing3', name: 'Cheddar Cheese, Sliced', quantity: 0.25, unit: 'lb', cost: 3.20 },
-            { id: 'ing4', name: 'Tomatoes, Roma', quantity: 0.5, unit: 'lb', cost: 1.50, prep: 'sliced', priceTrend: 0.25 },
-            { id: 'ing5', name: 'Lettuce, Iceberg', quantity: 0.25, unit: 'head', cost: 1.20, prep: 'shredded' },
+            { id: 'ing1', name: 'Ground Beef 80/20', quantity: 1, unit: 'lb' },
+            { id: 'ing2', name: 'Brioche Buns', quantity: 4, unit: 'each' },
+            { id: 'ing3', name: 'Cheddar Cheese, Sliced', quantity: 0.25, unit: 'lb' },
+            { id: 'ing4', name: 'Tomatoes, Roma', quantity: 0.5, unit: 'lb', prep: 'sliced' },
+            { id: 'ing5', name: 'Lettuce, Iceberg', quantity: 0.25, unit: 'head', prep: 'shredded' },
         ],
         instructions: "1. Form beef into 4 patties.\n2. Grill patties to desired doneness.\n3. Melt cheese on patties.\n4. Assemble burgers with toppings on buns."
     },
@@ -79,9 +81,9 @@ export const recipes: Recipe[] = [
         laborTimeMinutes: 5,
         imageUrl: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?q=80&w=2070&auto=format&fit=crop',
         ingredients: [
-            { id: 'ing5', name: 'Lettuce, Iceberg', quantity: 0.25, unit: 'head', cost: 1.20 },
-            { id: 'ing4', name: 'Tomatoes, Roma', quantity: 0.25, unit: 'lb', cost: 1.50 },
-            { id: 'ing10', name: 'Olive Oil', quantity: 0.01, unit: 'gallon', cost: 12.00 },
+            { id: 'ing5', name: 'Lettuce, Iceberg', quantity: 0.25, unit: 'head' },
+            { id: 'ing4', name: 'Tomatoes, Roma', quantity: 0.25, unit: 'lb' },
+            { id: 'ing10', name: 'Olive Oil', quantity: 0.01, unit: 'gallon' },
         ],
         instructions: "1. Chop lettuce and tomatoes.\n2. Toss with olive oil.\n3. Serve immediately."
     }

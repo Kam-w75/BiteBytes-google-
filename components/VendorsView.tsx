@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Vendor } from '../types';
+import { Vendor, Ingredient } from '../types';
 import { 
     PlusIcon, 
     CpuChipIcon, 
@@ -13,21 +13,29 @@ import {
 
 interface VendorsViewProps {
   vendors: Vendor[];
+  ingredients: Ingredient[];
+  onSaveVendor: (vendor: Vendor) => void;
+  onDeleteVendor: (vendorId: string) => void;
 }
 
-const VendorCard: React.FC<{ 
+interface VendorCardProps {
     vendor: Vendor;
+    ingredients: Ingredient[];
     onEdit: (vendor: Vendor) => void;
     onDelete: (vendorId: string) => void;
-}> = ({ vendor, onEdit, onDelete }) => {
+}
+
+const VendorCard: React.FC<VendorCardProps> = ({ vendor, ingredients, onEdit, onDelete }) => {
     
     const getInitials = (name: string) => {
         const parts = name.split(' ');
-        if (parts.length > 1) {
+        if (parts.length > 1 && parts[1]) {
             return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
         }
         return name.substring(0, 2).toUpperCase();
     }
+    
+    const totalValue = ingredients.reduce((sum, item) => sum + item.cost, 0);
 
     return (
         <div className="bg-[#2C2C2C] rounded-lg shadow-sm border border-[#444444] flex flex-col hover:shadow-lg hover:border-gray-600 transition-all duration-200">
@@ -68,10 +76,27 @@ const VendorCard: React.FC<{
                         ))}
                     </div>
                 </div>
+                <div className="text-sm">
+                    <p className="font-semibold text-gray-400">Supplied Ingredients ({ingredients.length})</p>
+                    {ingredients.length > 0 ? (
+                        <div className="mt-1 max-h-24 overflow-y-auto pr-2 text-xs space-y-1">
+                            {ingredients.map(ing => (
+                                <div key={ing.id} className="flex justify-between items-center">
+                                    <span className="truncate pr-2">{ing.name}</span>
+                                    <span className="flex-shrink-0 font-mono">${ing.cost.toFixed(2)}/{ing.unit}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-xs text-gray-500 mt-1">No ingredients mapped to this supplier.</p>
+                    )}
+                </div>
             </div>
             {/* Footer */}
             <div className="p-4 border-t border-[#444444] bg-[#1E1E1E] rounded-b-lg flex justify-between items-center">
-                <p className="text-xs text-gray-500">Last Order: <span className="font-medium text-gray-400">{vendor.lastOrderDate}</span></p>
+                 <p className="text-sm text-gray-400">
+                    Total Value: <span className="font-bold text-gray-200">${totalValue.toFixed(2)}</span>
+                </p>
                 <div className="flex items-center space-x-2">
                     <button onClick={() => onEdit(vendor)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md">
                         <PencilSquareIcon className="w-4 h-4" />
@@ -88,11 +113,38 @@ const VendorCard: React.FC<{
 const AddVendorModal: React.FC<{ 
     isOpen: boolean; 
     onClose: () => void;
+    onSave: (vendor: Vendor) => void;
     vendorToEdit: Vendor | null;
-}> = ({ isOpen, onClose, vendorToEdit }) => {
+}> = ({ isOpen, onClose, onSave, vendorToEdit }) => {
     if (!isOpen) return null;
 
     const isEditing = !!vendorToEdit;
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const orderDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].filter(day => formData.get(day) === 'on');
+
+        const savedVendor: Vendor = {
+            id: vendorToEdit?.id || '', // App.tsx will create an ID for new vendors
+            name: formData.get('vendor-name') as string,
+            type: formData.get('vendor-type') as Vendor['type'],
+            accountNumber: formData.get('account-number') as string,
+            contact: {
+                name: formData.get('contact-name') as string,
+                email: formData.get('contact-email') as string,
+                phone: formData.get('contact-phone') as string,
+            },
+            orderDays: orderDays,
+            isPrimary: vendorToEdit?.isPrimary || false,
+            lastOrderDate: vendorToEdit?.lastOrderDate || new Date().toISOString().split('T')[0],
+            paymentTerms: vendorToEdit?.paymentTerms || 'Net 30',
+            totalSpend: vendorToEdit?.totalSpend || 0,
+            itemCount: vendorToEdit?.itemCount || 0
+        };
+        onSave(savedVendor);
+        onClose();
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -102,15 +154,15 @@ const AddVendorModal: React.FC<{
                 </button>
                 <h2 className="text-xl font-bold text-gray-100 mb-4">{isEditing ? 'Edit Supplier' : 'Add New Supplier'}</h2>
                 
-                <form className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 text-gray-300">
+                <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 text-gray-300">
                     <div>
                         <label htmlFor="vendor-name" className="block text-sm font-medium text-gray-400">Supplier Name</label>
-                        <input type="text" id="vendor-name" defaultValue={vendorToEdit?.name} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
+                        <input type="text" id="vendor-name" name="vendor-name" defaultValue={vendorToEdit?.name} required className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="vendor-type" className="block text-sm font-medium text-gray-400">Type</label>
-                            <select id="vendor-type" defaultValue={vendorToEdit?.type} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]">
+                            <select id="vendor-type" name="vendor-type" defaultValue={vendorToEdit?.type} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]">
                                 <option>Broadline</option>
                                 <option>Produce</option>
                                 <option>Specialty</option>
@@ -119,29 +171,29 @@ const AddVendorModal: React.FC<{
                         </div>
                          <div>
                             <label htmlFor="account-number" className="block text-sm font-medium text-gray-400">Account Number</label>
-                            <input type="text" id="account-number" defaultValue={vendorToEdit?.accountNumber} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
+                            <input type="text" id="account-number" name="account-number" defaultValue={vendorToEdit?.accountNumber} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                         </div>
                     </div>
                      <div className="grid grid-cols-3 gap-4">
                          <div className="col-span-1">
                             <label htmlFor="contact-name" className="block text-sm font-medium text-gray-400">Contact Name</label>
-                            <input type="text" id="contact-name" defaultValue={vendorToEdit?.contact.name} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
+                            <input type="text" id="contact-name" name="contact-name" defaultValue={vendorToEdit?.contact.name} required className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                          </div>
                          <div className="col-span-2">
                             <label htmlFor="contact-email" className="block text-sm font-medium text-gray-400">Contact Email</label>
-                            <input type="email" id="contact-email" defaultValue={vendorToEdit?.contact.email} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
+                            <input type="email" id="contact-email" name="contact-email" defaultValue={vendorToEdit?.contact.email} required className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                          </div>
                     </div>
                      <div>
                         <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-400">Contact Phone</label>
-                        <input type="tel" id="contact-phone" defaultValue={vendorToEdit?.contact.phone} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
+                        <input type="tel" id="contact-phone" name="contact-phone" defaultValue={vendorToEdit?.contact.phone} className="mt-1 block w-full bg-transparent border-[#444444] rounded-md shadow-sm focus:ring-[#FF6B6B] focus:border-[#FF6B6B]" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-400">Order Days</label>
                         <div className="mt-2 flex flex-wrap gap-2">
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                 <label key={day} className="flex-1 text-center min-w-[40px]">
-                                    <input type="checkbox" defaultChecked={vendorToEdit?.orderDays.includes(day)} className="sr-only peer" />
+                                    <input type="checkbox" name={day} defaultChecked={vendorToEdit?.orderDays.includes(day)} className="sr-only peer" />
                                     <div className="w-full p-2 border border-[#444444] rounded-md cursor-pointer text-xs peer-checked:bg-[#FF6B6B] peer-checked:text-black peer-checked:border-[#FF6B6B] transition-colors">{day}</div>
                                 </label>
                             ))}
@@ -161,8 +213,7 @@ const AddVendorModal: React.FC<{
     );
 };
 
-export const VendorsView: React.FC<VendorsViewProps> = ({ vendors: initialVendors }) => {
-    const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+export const VendorsView: React.FC<VendorsViewProps> = ({ vendors, ingredients, onSaveVendor, onDeleteVendor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [vendorToEdit, setVendorToEdit] = useState<Vendor | null>(null);
 
@@ -177,9 +228,13 @@ export const VendorsView: React.FC<VendorsViewProps> = ({ vendors: initialVendor
     };
 
     const handleDelete = (vendorId: string) => {
-        if (window.confirm('Are you sure you want to delete this vendor?')) {
-            setVendors(prev => prev.filter(v => v.id !== vendorId));
+        if (window.confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) {
+            onDeleteVendor(vendorId);
         }
+    };
+    
+    const handleSave = (vendor: Vendor) => {
+        onSaveVendor(vendor);
     };
 
   return (
@@ -211,19 +266,24 @@ export const VendorsView: React.FC<VendorsViewProps> = ({ vendors: initialVendor
       
       {/* Vendor Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {vendors.map(vendor => (
-              <VendorCard 
-                key={vendor.id} 
-                vendor={vendor} 
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-          ))}
+          {vendors.map(vendor => {
+              const suppliedIngredients = ingredients.filter(ing => ing.vendorId === vendor.id);
+              return (
+                  <VendorCard 
+                    key={vendor.id} 
+                    vendor={vendor} 
+                    ingredients={suppliedIngredients}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+              )
+          })}
       </div>
 
       <AddVendorModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
         vendorToEdit={vendorToEdit}
       />
     </div>

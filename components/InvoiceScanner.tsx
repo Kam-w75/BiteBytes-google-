@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Header } from './Header';
 // FIX: Corrected import path for ScannedItem type.
-import { ScannedItem } from '../types';
+import { ScannedItem, Vendor, Ingredient } from '../types';
 // FIX: Corrected import path for Icons.
 import { UploadIcon, SparklesIcon, XCircleIcon, CheckCircleIcon, ArrowPathIcon } from './Icons';
 
@@ -31,13 +31,19 @@ const getConfidenceTextColor = (score?: number) => {
   return 'text-red-400';
 };
 
+interface InvoiceScannerProps {
+    onAddNewIngredients: (newIngredients: Omit<Ingredient, 'id' | 'usedInRecipes' | 'priceTrend'>[]) => void;
+    vendors: Vendor[];
+}
 
-export const InvoiceScanner: React.FC = () => {
+export const InvoiceScanner: React.FC<InvoiceScannerProps> = ({ onAddNewIngredients, vendors }) => {
   const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedVendorId, setSelectedVendorId] = useState<string>('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,6 +53,7 @@ export const InvoiceScanner: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setScannedItems([]);
+    setShowSuccess(false);
 
     try {
       if (!process.env.API_KEY) {
@@ -108,6 +115,34 @@ export const InvoiceScanner: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const handleAddToInventory = () => {
+    if (!selectedVendorId) {
+        setError('Please select a supplier for these items.');
+        return;
+    }
+
+    const newIngredients: Omit<Ingredient, 'id' | 'usedInRecipes' | 'priceTrend'>[] = scannedItems.map(item => ({
+        name: item.itemName,
+        cost: item.price,
+        unit: item.unit,
+        vendorId: selectedVendorId,
+        category: 'Other', // Default category
+    }));
+
+    onAddNewIngredients(newIngredients);
+
+    const itemCount = scannedItems.length;
+    setScannedItems([]);
+    setImagePreview(null);
+    setSelectedVendorId('');
+    setError(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 4000);
+};
+
   return (
     <div>
       <Header
@@ -165,6 +200,19 @@ export const InvoiceScanner: React.FC = () => {
             </div>
           )}
 
+          {showSuccess && (
+            <div className="mt-6 rounded-md bg-green-900/50 p-4">
+                <div className="flex">
+                    <div className="flex-shrink-0">
+                        <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                    </div>
+                    <div className="ml-3">
+                        <p className="text-sm font-medium text-green-300">Items successfully added to your inventory!</p>
+                    </div>
+                </div>
+            </div>
+          )}
+
           {scannedItems.length > 0 && (
             <div className="mt-8">
               <h3 className="text-lg font-medium leading-6 text-gray-100">Extracted Items</h3>
@@ -191,9 +239,29 @@ export const InvoiceScanner: React.FC = () => {
                   ))}
                 </ul>
               </div>
+              <div className="mt-6">
+                <label htmlFor="vendor-select" className="block text-sm font-medium text-gray-300">
+                    Select Supplier for these Items
+                </label>
+                <select
+                    id="vendor-select"
+                    value={selectedVendorId}
+                    onChange={(e) => {
+                        setSelectedVendorId(e.target.value);
+                        if (error) setError(null);
+                    }}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 bg-[#2C2C2C] text-white border border-[#444444] focus:outline-none focus:ring-[#FF6B6B] focus:border-[#FF6B6B] sm:text-sm rounded-md"
+                >
+                    <option value="" disabled>-- Choose a supplier --</option>
+                    {vendors.map(vendor => (
+                        <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
+                    ))}
+                </select>
+              </div>
               <div className="mt-6 flex justify-end">
                 <button
                     type="button"
+                    onClick={handleAddToInventory}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                     <CheckCircleIcon className="-ml-1 mr-2 h-5 w-5" />

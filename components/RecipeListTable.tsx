@@ -1,12 +1,18 @@
-import React from 'react';
-import { Recipe } from '../types';
+import React, { useMemo } from 'react';
+import { Recipe, Ingredient } from '../types';
 
 interface RecipeListTableProps {
   recipes: Recipe[];
+  allIngredients: Ingredient[];
   onSelectRecipe: (recipe: Recipe) => void;
 }
 
-export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, onSelectRecipe }) => {
+export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, allIngredients, onSelectRecipe }) => {
+  const ingredientsMap = useMemo(() => 
+    new Map(allIngredients.map(i => [i.id, i])), 
+    [allIngredients]
+  );
+
   return (
     <div className="overflow-hidden border border-[#444444] md:rounded-lg">
       <table className="min-w-full divide-y divide-[#444444]">
@@ -22,7 +28,11 @@ export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, onSel
         </thead>
         <tbody className="divide-y divide-[#444444] bg-[#2C2C2C]">
           {recipes.map((recipe) => {
-            const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
+            const totalCost = recipe.ingredients.reduce((acc, ing) => {
+                const masterIngredient = ingredientsMap.get(ing.id);
+                const cost = masterIngredient ? masterIngredient.cost : 0;
+                return acc + (cost * ing.quantity);
+            }, 0);
             const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
             const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
             

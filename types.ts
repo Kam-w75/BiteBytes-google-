@@ -1,39 +1,63 @@
+// FIX: Define and export all necessary types for the application.
+
+export type IngredientCategory = 'Meat' | 'Produce' | 'Dairy' | 'Dry Goods' | 'Spices' | 'Canned' | 'Beverages' | 'Other';
+
+export interface Vendor {
+    id: string;
+    name: string;
+    lastOrderDate: string;
+    totalSpend: number;
+    itemCount: number;
+    accountNumber?: string;
+    contact: {
+        name: string;
+        phone: string;
+        email: string;
+    };
+    type: 'Broadline' | 'Produce' | 'Specialty' | 'Other';
+    isPrimary: boolean;
+    orderDays: string[];
+    paymentTerms: string;
+}
+
 export interface Ingredient {
-  id: string;
-  name: string;
-  cost: number;
-  unit: string;
-  supplier: string;
-  usedInRecipes: number;
-  priceTrend?: number;
-  category: 'Meat' | 'Produce' | 'Dairy' | 'Dry Goods' | 'Spices' | 'Canned' | 'Beverages' | 'Other';
+    id: string;
+    name: string;
+    cost: number;
+    unit: string;
+    vendorId: string;
+    supplier?: string; // used in some components but not in data
+    usedInRecipes: number;
+    priceTrend?: number;
+    category: IngredientCategory;
 }
 
 export interface RecipeIngredient {
-  id: string; // Corresponds to an Ingredient id
-  name: string;
-  quantity: number;
-  unit: string;
-  cost?: number; // per unit
-  prep?: string;
-  priceTrend?: number;
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    prep?: string;
+    cost?: number;
+    priceTrend?: number;
+    category?: IngredientCategory;
 }
 
 export interface Recipe {
-  id: string;
-  name: string;
-  ingredients: RecipeIngredient[];
-  instructions: string;
-  servings: number;
-  menuPrice: number;
-  laborTimeMinutes: number;
-  imageUrl?: string;
+    id: string;
+    name: string;
+    servings: number;
+    menuPrice: number;
+    laborTimeMinutes: number;
+    imageUrl?: string;
+    ingredients: RecipeIngredient[];
+    instructions: string;
 }
 
 export interface Menu {
-  id: string;
-  name: string;
-  recipeIds: string[];
+    id: string;
+    name: string;
+    recipeIds: string[];
 }
 
 export interface RecipeBook {
@@ -45,7 +69,7 @@ export interface RecipeBook {
 export interface Doc {
     id: string;
     name: string;
-    type: 'SOP' | 'Checklist' | 'Training';
+    type: 'Checklist' | 'SOP' | 'Training';
     lastUpdated: string;
 }
 
@@ -60,38 +84,10 @@ export interface PurchaseItem {
     status: 'Needs Mapping' | 'Mapped';
 }
 
-export interface VendorContact {
-    name: string;
-    phone: string;
-    email: string;
-}
-
-export interface Vendor {
-    id: string;
-    name: string;
-    lastOrderDate: string;
-    totalSpend: number;
-    itemCount: number;
-    accountNumber?: string;
-    contact: VendorContact;
-    type: 'Broadline' | 'Produce' | 'Specialty' | 'Other';
-    isPrimary: boolean;
-    orderDays: string[];
-    paymentTerms: string;
-}
-
-export interface ScannedItem {
-  itemName: string;
-  quantity: number;
-  price: number;
-  unit: string;
-  confidence?: number;
-}
-
 export enum InsightType {
-    Warning = 'warning',
-    Opportunity = 'opportunity',
-    Success = 'success'
+    Warning,
+    Opportunity,
+    Success
 }
 
 export interface Insight {
@@ -106,18 +102,48 @@ export interface PriceChangeItem {
     ingredientName: string;
     oldPrice: number;
     newPrice: number;
-    category: Ingredient['category'];
+    category: IngredientCategory;
 }
 
 export interface PriceChangeEntry {
     date: string;
     supplier: string;
-    items: PriceChangeItem[];
     affectedRecipes: number;
+    items: PriceChangeItem[];
+}
+
+export interface ScannedItem {
+  itemName: string;
+  quantity: number;
+  price: number;
+  unit: string;
+  confidence?: number;
+}
+
+export interface SpecialSuggestion {
+  name: string;
+  description: string;
+  keyIngredients: string[];
 }
 
 export interface ChatMessage {
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: Date;
+    sender: 'user' | 'ai';
+    text: string;
+    timestamp: Date;
+}
+
+export interface PurchaseOrderItem {
+    ingredientId: string;
+    name: string;
+    currentPar: number;
+    suggestedQuantity: number;
+    unit: string;
+    price: number;
+    reasoning: string;
+}
+
+export interface PurchaseOrder {
+    vendorId: string;
+    vendorName: string;
+    items: PurchaseOrderItem[];
 }

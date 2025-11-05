@@ -14,6 +14,7 @@ import {
 
 interface RecipeDetailViewProps {
   recipe: Recipe;
+  allIngredients: Ingredient[];
   onBack: () => void;
 }
 
@@ -45,8 +46,24 @@ const CollapsibleSection: React.FC<{ title: string; children: React.ReactNode }>
     );
 };
 
-export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, onBack }) => {
+export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allIngredients, onBack }) => {
   const [instructionsVisible, setInstructionsVisible] = useState(false);
+
+  const ingredientsMap = useMemo(() => 
+    new Map(allIngredients.map(i => [i.id, i])), 
+    [allIngredients]
+  );
+  
+  const recipeIngredientsWithLiveCost = useMemo(() => {
+    return recipe.ingredients.map(ing => {
+        const masterIngredient = ingredientsMap.get(ing.id);
+        return {
+            ...ing,
+            cost: masterIngredient?.cost || 0,
+            priceTrend: masterIngredient?.priceTrend || 0
+        };
+    });
+  }, [recipe, ingredientsMap]);
 
   const {
       totalCost,
@@ -55,15 +72,15 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, onBa
       profitPerServing,
       profitPercent,
   } = useMemo(() => {
-    const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
+    const totalCost = recipeIngredientsWithLiveCost.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
     const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
     const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
     const profitPerServing = recipe.menuPrice - costPerServing;
     const profitPercent = recipe.menuPrice > 0 ? (profitPerServing / recipe.menuPrice) * 100 : 0;
     return { totalCost, costPerServing, foodCostPercent, profitPerServing, profitPercent };
-  }, [recipe]);
+  }, [recipe, recipeIngredientsWithLiveCost]);
 
-  const hasHighCostIngredient = recipe.ingredients.some(ing => (ing.priceTrend || 0) > 0.1);
+  const hasHighCostIngredient = recipeIngredientsWithLiveCost.some(ing => (ing.priceTrend || 0) > 0.1);
 
   const getAiInsight = () => {
     if (foodCostPercent < 25 && foodCostPercent > 0) {
@@ -73,7 +90,7 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, onBa
       };
     }
     if (hasHighCostIngredient) {
-      const expensiveIngredient = recipe.ingredients.find(ing => (ing.priceTrend || 0) > 0.1);
+      const expensiveIngredient = recipeIngredientsWithLiveCost.find(ing => (ing.priceTrend || 0) > 0.1);
       return { 
         emoji: '⚠️', 
         message: `${expensiveIngredient?.name} price went up ${((expensiveIngredient?.priceTrend || 0) * 100).toFixed(0)}%. You might want to raise the menu price by $${(costPerServing * (expensiveIngredient?.priceTrend || 0)).toFixed(2)}.`
@@ -159,7 +176,7 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, onBa
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#444444]">
-                        {recipe.ingredients.map((ing, i) => (
+                        {recipeIngredientsWithLiveCost.map((ing, i) => (
                             <tr key={i} className="hover:bg-[#444444]">
                                 <td className="px-4 py-2 font-medium text-gray-100">{ing.name}</td>
                                 <td className="px-4 py-2 text-gray-300">{ing.quantity} {ing.unit}</td>

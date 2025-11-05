@@ -7,9 +7,14 @@ type AssistantStatus = 'idle' | 'listening' | 'speaking' | 'connecting' | 'error
 
 // --- Function Implementations for AI Tools ---
 
+// FIX: Correctly calculate costs by looking up ingredient prices from the main ingredients list.
 const getFoodCostAnalysis = () => {
+    const ingredientsMap = new Map(ingredients.map(i => [i.id, i]));
     const totalCostOfGoods = recipes.reduce((total, recipe) => {
-        return total + recipe.ingredients.reduce((recipeTotal, ing) => recipeTotal + (ing.cost || 0) * ing.quantity, 0);
+        return total + recipe.ingredients.reduce((recipeTotal, ing) => {
+            const masterIngredient = ingredientsMap.get(ing.id);
+            return recipeTotal + (masterIngredient?.cost || 0) * ing.quantity;
+        }, 0);
     }, 0);
     const totalRevenue = recipes.reduce((total, recipe) => total + recipe.menuPrice * recipe.servings, 0);
     const overallFoodCostPercent = totalRevenue > 0 ? (totalCostOfGoods / totalRevenue) * 100 : 0;
@@ -29,12 +34,17 @@ const getFoodCostAnalysis = () => {
     });
 };
 
+// FIX: Correctly calculate costs by looking up ingredient prices from the main ingredients list.
 const getMostProfitableRecipe = () => {
+    const ingredientsMap = new Map(ingredients.map(i => [i.id, i]));
     let mostProfitableRecipe: any = null;
     let maxProfitMargin = -Infinity;
 
     recipes.forEach(recipe => {
-        const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
+        const totalCost = recipe.ingredients.reduce((acc, ing) => {
+            const masterIngredient = ingredientsMap.get(ing.id);
+            return acc + (masterIngredient?.cost || 0) * ing.quantity;
+        }, 0);
         const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
         const profitMargin = recipe.menuPrice > 0 ? ((recipe.menuPrice - costPerServing) / recipe.menuPrice) * 100 : 0;
         
@@ -55,10 +65,15 @@ const getMostProfitableRecipe = () => {
     return JSON.stringify({ error: "Could not determine the most profitable recipe." });
 };
 
+// FIX: Correctly calculate costs by looking up ingredient prices from the main ingredients list.
 const getRecipeDetails = (recipeName: string) => {
+    const ingredientsMap = new Map(ingredients.map(i => [i.id, i]));
     const recipe = recipes.find(r => r.name.toLowerCase().includes(recipeName.toLowerCase()));
     if (recipe) {
-        const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
+        const totalCost = recipe.ingredients.reduce((acc, ing) => {
+            const masterIngredient = ingredientsMap.get(ing.id);
+            return acc + (masterIngredient?.cost || 0) * ing.quantity;
+        }, 0);
         const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
         const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
         return JSON.stringify({

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Page } from '../App';
-import { ChartPieIcon, CalculatorIcon, DocumentChartBarIcon, DocumentTextIcon, SparklesIcon, QuestionMarkCircleIcon, ArrowTrendingUpIcon, Cog8ToothIcon, ArrowsRightLeftIcon, XMarkIcon } from './Icons';
+import { ChartPieIcon, CalculatorIcon, DocumentChartBarIcon, DocumentTextIcon, SparklesIcon, QuestionMarkCircleIcon, ArrowTrendingUpIcon, Cog8ToothIcon, ArrowsRightLeftIcon, XMarkIcon, LightBulbIcon, ShoppingBagIcon } from './Icons';
 
 interface SidebarProps {
   currentPage: Page;
@@ -12,6 +12,7 @@ interface SidebarProps {
 const navItems: { id: Page; name: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', name: 'Dashboard', icon: <ChartPieIcon className="h-6 w-6" /> },
   { id: 'costing', name: 'Costing', icon: <CalculatorIcon className="h-6 w-6" /> },
+  { id: 'ordering', name: 'Ordering', icon: <ShoppingBagIcon className="h-6 w-6" /> },
   { id: 'reports', name: 'Reports', icon: <DocumentChartBarIcon className="h-6 w-6" /> },
   { id: 'price-history', name: 'Price History', icon: <ArrowTrendingUpIcon className="h-6 w-6" /> },
   { id: 'invoices', name: 'Invoices', icon: <DocumentTextIcon className="h-6 w-6" /> },

@@ -1,11 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Header } from './Header';
 import { priceChangeHistory, vendors } from '../data';
-import { PriceChangeItem, Ingredient } from '../types';
+import { PriceChangeItem, Ingredient, Recipe, PriceChangeEntry } from '../types';
 import { ArrowUpIcon, ArrowDownIcon } from './Icons';
+import { ImpactReviewModal } from './ImpactReviewModal';
 
 type FilterType = 'all' | 'increases' | 'decreases';
 type CategoryType = Ingredient['category'] | 'all';
+
+interface PriceChangeHistoryProps {
+    recipes: Recipe[];
+    ingredients: Ingredient[];
+}
 
 const FilterButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
@@ -37,10 +43,11 @@ const PriceChangeCard: React.FC<{ item: PriceChangeItem }> = ({ item }) => {
     );
 };
 
-export const PriceChangeHistory: React.FC = () => {
+export const PriceChangeHistory: React.FC<PriceChangeHistoryProps> = ({ recipes, ingredients }) => {
     const [filterType, setFilterType] = useState<FilterType>('all');
     const [supplierFilter, setSupplierFilter] = useState<string>('all');
     const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all');
+    const [selectedEntry, setSelectedEntry] = useState<PriceChangeEntry | null>(null);
 
     const filteredHistory = useMemo(() => {
         return priceChangeHistory.map(entry => {
@@ -129,7 +136,10 @@ export const PriceChangeHistory: React.FC = () => {
                                             </div>
                                             <div className="p-4 bg-[#1E1E1E] flex justify-between items-center">
                                                 <p className="text-xs font-medium text-gray-400">This affected {entry.affectedRecipes} recipes</p>
-                                                <button className="px-3 py-1.5 text-xs font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
+                                                <button 
+                                                    onClick={() => setSelectedEntry(entry)}
+                                                    className="px-3 py-1.5 text-xs font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]"
+                                                >
                                                     Review Impact
                                                 </button>
                                             </div>
@@ -146,6 +156,16 @@ export const PriceChangeHistory: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {selectedEntry && (
+                <ImpactReviewModal
+                    isOpen={!!selectedEntry}
+                    onClose={() => setSelectedEntry(null)}
+                    entry={selectedEntry}
+                    allRecipes={recipes}
+                    allIngredients={ingredients}
+                />
+            )}
         </div>
     );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { Header } from './Header';
-// FIX: Import `ingredients` data to access category information.
 import { recipes, foodCostHistory, ingredients as allIngredients } from '../data';
 import { Ingredient } from '../types';
 
@@ -117,11 +116,14 @@ export const FoodCostReport: React.FC = () => {
     const targetFoodCost = 30.0;
 
     const reportData = useMemo(() => {
-        // FIX: Create a map of all ingredients for efficient lookup.
-        const allIngredientsMap = new Map(allIngredients.map(i => [i.id, i]));
+        const ingredientsMap = new Map(allIngredients.map(i => [i.id, i]));
 
         const totalCostOfGoods = recipes.reduce((total, recipe) => {
-            return total + recipe.ingredients.reduce((recipeTotal, ing) => recipeTotal + (ing.cost || 0) * ing.quantity, 0);
+            return total + recipe.ingredients.reduce((recipeTotal, ing) => {
+                 const masterIngredient = ingredientsMap.get(ing.id);
+                 const cost = masterIngredient ? masterIngredient.cost : 0;
+                 return recipeTotal + cost * ing.quantity;
+            }, 0);
         }, 0);
 
         const totalRevenue = recipes.reduce((total, recipe) => total + recipe.menuPrice * recipe.servings, 0);
@@ -130,11 +132,10 @@ export const FoodCostReport: React.FC = () => {
         const categoryCosts: { [key: string]: number } = {};
         recipes.forEach(recipe => {
             recipe.ingredients.forEach(ing => {
-                const cost = (ing.cost || 0) * ing.quantity;
-                // FIX: Look up the full ingredient details to get its category.
-                const fullIngredient = allIngredientsMap.get(ing.id);
-                if (fullIngredient) {
-                    categoryCosts[fullIngredient.category] = (categoryCosts[fullIngredient.category] || 0) + cost;
+                const masterIngredient = ingredientsMap.get(ing.id);
+                if (masterIngredient) {
+                    const cost = masterIngredient.cost * ing.quantity;
+                    categoryCosts[masterIngredient.category] = (categoryCosts[masterIngredient.category] || 0) + cost;
                 }
             });
         });
@@ -152,7 +153,7 @@ export const FoodCostReport: React.FC = () => {
             topDrivers: categoryBreakdown,
             totalCostOfGoods,
         };
-    }, []);
+    }, [recipes, allIngredients]);
 
     const difference = reportData.overallFoodCostPercent - targetFoodCost;
 

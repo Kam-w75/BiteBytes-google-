@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { GoogleGenAI, Type } from "@google/genai";
 import { Header } from './Header';
 import { insights } from '../data';
-import { Insight, InsightType } from '../types';
+import { Insight, InsightType, SpecialSuggestion } from '../types';
 import { 
     WarningIcon, 
     OpportunityIcon, 
     SuccessIcon, 
     ArrowUpIcon, 
-    ArrowDownIcon 
+    ArrowDownIcon,
+    CpuChipIcon,
+    ArrowPathIcon,
+    SparklesIcon
 } from './Icons';
 
 // Helper to get the right icon for an insight
@@ -87,30 +91,96 @@ const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => {
     );
 };
 
-const Sparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => {
-    const width = 100;
-    const height = 30;
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const range = max - min || 1;
+const WasteReductionAssistant: React.FC = () => {
+    const [suggestions, setSuggestions] = useState<SpecialSuggestion[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const points = data.map((d, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = height - ((d - min) / range) * height;
-        return `${x},${y}`;
-    }).join(' ');
+    const getSuggestions = async () => {
+        setIsLoading(true);
+        setError(null);
+        setSuggestions([]);
+
+        try {
+            if (!process.env.API_KEY) {
+                throw new Error("API_KEY environment variable not set");
+            }
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            
+            const prompt = `I have an excess of Roma Tomatoes. Generate three appealing and profitable daily special ideas that use them. Provide a name, a brief description, and a list of other key ingredients for each special.`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-pro',
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            specials: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        name: { type: Type.STRING },
+                                        description: { type: Type.STRING },
+                                        keyIngredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    },
+                                    required: ["name", "description", "keyIngredients"]
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const parsedResponse = JSON.parse(response.text);
+            if (parsedResponse.specials && Array.isArray(parsedResponse.specials)) {
+                setSuggestions(parsedResponse.specials);
+            } else {
+                throw new Error("Invalid response format from API.");
+            }
+
+        } catch (e: any) {
+            setError(`Failed to get suggestions: ${e.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-8">
-            <polyline
-                fill="none"
-                stroke={color}
-                strokeWidth="2"
-                points={points}
-            />
-        </svg>
+        <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
+            <div className="flex items-start">
+                <CpuChipIcon className="h-6 w-6 text-[#FF6B6B] mr-4 flex-shrink-0 mt-1" />
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-200">Waste Reduction Assistant</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                        You have an excess of <strong className="text-gray-200">5 lbs of Roma Tomatoes</strong>. Use them before they spoil!
+                    </p>
+                </div>
+            </div>
+            {suggestions.length === 0 && !isLoading && (
+                 <button onClick={getSuggestions} className="mt-4 w-full flex items-center justify-center px-4 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
+                    <SparklesIcon className="h-5 w-5 mr-2" />
+                    Suggest Specials
+                </button>
+            )}
+            {isLoading && <div className="mt-4 text-center text-gray-400 flex items-center justify-center"><ArrowPathIcon className="animate-spin h-5 w-5 mr-2" /> Generating ideas...</div>}
+            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+            {suggestions.length > 0 && (
+                <div className="mt-4 space-y-3">
+                    {suggestions.map((s, i) => (
+                        <div key={i} className="bg-[#1E1E1E] p-4 rounded-md border border-gray-700">
+                            <h4 className="font-bold text-gray-100">{s.name}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{s.description}</p>
+                            <p className="text-xs text-gray-500 mt-2">Uses: {s.keyIngredients.join(', ')}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
-};
+}
 
 export const Stats: React.FC = () => {
     return (
@@ -132,35 +202,10 @@ export const Stats: React.FC = () => {
                 <div>
                     <h3 className="text-xl font-semibold text-gray-200 mb-4">Insights Feed</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <WasteReductionAssistant />
                         {insights.map(insight => (
                             <InsightCard key={insight.id} insight={insight} />
                         ))}
-                         <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
-                            <h3 className="text-lg font-semibold text-gray-200">Your Week in Numbers</h3>
-                            <div className="mt-4 space-y-4">
-                                <div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-400">Sales</span>
-                                        <span className="font-bold text-gray-200">$12,450</span>
-                                    </div>
-                                    <Sparkline data={[5, 8, 9, 12, 10, 11, 12]} color="#FF6B6B" />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-400">Food Cost</span>
-                                        <span className="font-bold text-gray-200">$4,233</span>
-                                    </div>
-                                    <Sparkline data={[10, 11, 9, 12, 13, 11, 14]} color="#EF4444" />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="font-medium text-gray-400">Profit</span>
-                                        <span className="font-bold text-gray-200">$2,280</span>
-                                    </div>
-                                    <Sparkline data={[6, 7, 8, 6, 9, 10, 9]} color="#10B981" />
-                                </div>
-                            </div>
-                         </div>
                     </div>
                 </div>
             </div>

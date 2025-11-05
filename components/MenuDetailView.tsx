@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Menu, Recipe } from '../types';
+import { Menu, Recipe, Ingredient } from '../types';
 import { 
     ArrowLeftIcon, 
     PencilIcon, 
@@ -10,6 +10,7 @@ import {
 interface MenuDetailViewProps {
   menu: Menu;
   recipes: Recipe[];
+  allIngredients: Ingredient[];
   onBack: () => void;
   onSelectRecipe: (recipe: Recipe) => void;
 }
@@ -21,7 +22,21 @@ const MetricCard: React.FC<{ title: string; value: string; }> = ({ title, value 
     </div>
 );
 
-export const MenuDetailView: React.FC<MenuDetailViewProps> = ({ menu, recipes, onBack, onSelectRecipe }) => {
+export const MenuDetailView: React.FC<MenuDetailViewProps> = ({ menu, recipes, allIngredients, onBack, onSelectRecipe }) => {
+
+    const ingredientsMap = useMemo(() => 
+        new Map(allIngredients.map(i => [i.id, i])), 
+        [allIngredients]
+    );
+
+    const getRecipeCostPerServing = (recipe: Recipe) => {
+        const totalCost = recipe.ingredients.reduce((acc, ing) => {
+            const masterIngredient = ingredientsMap.get(ing.id);
+            const cost = masterIngredient ? masterIngredient.cost : 0;
+            return acc + (cost * ing.quantity);
+        }, 0);
+        return recipe.servings > 0 ? totalCost / recipe.servings : 0;
+    };
 
     const menuRecipes = useMemo(() => {
         return menu.recipeIds.map(id => recipes.find(r => r.id === id)).filter((r): r is Recipe => !!r);
@@ -36,23 +51,21 @@ export const MenuDetailView: React.FC<MenuDetailViewProps> = ({ menu, recipes, o
             };
         }
 
-        const totalCost = menuRecipes.reduce((acc, recipe) => {
-            const recipeCost = recipe.ingredients.reduce((sum, ing) => sum + (ing.cost || 0) * ing.quantity, 0);
-            const costPerServing = recipe.servings > 0 ? recipeCost / recipe.servings : 0;
-            return acc + costPerServing; 
+        const totalCostOfServings = menuRecipes.reduce((acc, recipe) => {
+            return acc + getRecipeCostPerServing(recipe); 
         }, 0);
 
         const totalMenuPrice = menuRecipes.reduce((acc, recipe) => acc + recipe.menuPrice, 0);
         const avgMenuPrice = totalMenuPrice > 0 ? totalMenuPrice / menuRecipes.length : 0;
 
-        const avgFoodCostPercent = totalMenuPrice > 0 ? (totalCost / totalMenuPrice) * 100 : 0;
+        const avgFoodCostPercent = totalMenuPrice > 0 ? (totalCostOfServings / totalMenuPrice) * 100 : 0;
 
         return {
-            totalCost,
+            totalCost: totalCostOfServings,
             avgMenuPrice,
             avgFoodCostPercent,
         };
-    }, [menuRecipes]);
+    }, [menuRecipes, ingredientsMap]);
 
 
     return (
@@ -107,8 +120,7 @@ export const MenuDetailView: React.FC<MenuDetailViewProps> = ({ menu, recipes, o
                             </thead>
                             <tbody className="divide-y divide-[#444444] bg-[#2C2C2C]">
                             {menuRecipes.map((recipe) => {
-                                const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ing.cost || 0) * ing.quantity, 0);
-                                const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
+                                const costPerServing = getRecipeCostPerServing(recipe);
                                 const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
                                 
                                 return (

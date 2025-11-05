@@ -10,6 +10,7 @@ import { vendors as mockVendors } from '../data';
 interface IngredientsViewProps {
   ingredients: Ingredient[];
   onAddIngredientClick: () => void;
+  onSelectIngredient: (ingredient: Ingredient) => void;
 }
 
 const PriceTrend: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
@@ -32,27 +33,35 @@ const StatusDot: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
   return null;
 };
 
-const IngredientCard: React.FC<{ ingredient: Ingredient }> = ({ ingredient }) => (
-  <div className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444] flex flex-col justify-between hover:shadow-lg hover:border-gray-600 transition-all duration-200 cursor-pointer">
-    <div>
-        <div className="flex justify-between items-start">
-            <h3 className="font-bold text-lg text-gray-100 pr-2">{ingredient.name}</h3>
-            <StatusDot trend={ingredient.priceTrend} />
-        </div>
-        <p className="text-2xl font-bold text-gray-100 mt-1">
-            ${ingredient.cost?.toFixed(2)}
-            <span className="text-sm font-normal text-gray-400">/{ingredient.unit}</span>
-        </p>
-        <div className="flex items-center mt-2">
-            <PriceTrend trend={ingredient.priceTrend} />
-        </div>
+interface IngredientCardProps {
+    ingredient: Ingredient;
+    onSelect: (ingredient: Ingredient) => void;
+}
+
+const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient, onSelect }) => {
+  const vendor = mockVendors.find(v => v.id === ingredient.vendorId);
+  return (
+    <div onClick={() => onSelect(ingredient)} className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444] flex flex-col justify-between hover:shadow-lg hover:border-gray-600 transition-all duration-200 cursor-pointer">
+      <div>
+          <div className="flex justify-between items-start">
+              <h3 className="font-bold text-lg text-gray-100 pr-2">{ingredient.name}</h3>
+              <StatusDot trend={ingredient.priceTrend} />
+          </div>
+          <p className="text-2xl font-bold text-gray-100 mt-1">
+              ${ingredient.cost?.toFixed(2)}
+              <span className="text-sm font-normal text-gray-400">/{ingredient.unit}</span>
+          </p>
+          <div className="flex items-center mt-2">
+              <PriceTrend trend={ingredient.priceTrend} />
+          </div>
+      </div>
+      <div className="mt-4 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
+          <span>Supplier: <strong className="text-gray-400">{vendor?.name || 'N/A'}</strong></span>
+          <span>Used in: <strong className="text-gray-400">{ingredient.usedInRecipes} recipes</strong></span>
+      </div>
     </div>
-    <div className="mt-4 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
-        <span>Supplier: <strong className="text-gray-400">{ingredient.supplier}</strong></span>
-        <span>Used in: <strong className="text-gray-400">{ingredient.usedInRecipes} recipes</strong></span>
-    </div>
-  </div>
-);
+  );
+};
 
 const initialFilterState: FilterState = {
     sortBy: 'smart',
@@ -61,7 +70,7 @@ const initialFilterState: FilterState = {
     priceChange: 'all'
 };
 
-export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, onAddIngredientClick }) => {
+export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, onAddIngredientClick, onSelectIngredient }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -84,7 +93,8 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
     
     // 3. Filter by suppliers
     if (activeFilters.suppliers.length > 0) {
-        filtered = filtered.filter(ing => ing.supplier && activeFilters.suppliers.includes(ing.supplier));
+        const selectedVendorIds = mockVendors.filter(v => activeFilters.suppliers.includes(v.name)).map(v => v.id);
+        filtered = filtered.filter(ing => ing.vendorId && selectedVendorIds.includes(ing.vendorId));
     }
 
     // 4. Filter by price change
@@ -170,7 +180,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
       {/* Grid of Ingredient Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {sortedAndFilteredIngredients.map(ing => (
-          <IngredientCard key={ing.id} ingredient={ing} />
+          <IngredientCard key={ing.id} ingredient={ing} onSelect={onSelectIngredient} />
         ))}
         {sortedAndFilteredIngredients.length === 0 && (
             <div className="col-span-full text-center py-12 text-gray-500">
