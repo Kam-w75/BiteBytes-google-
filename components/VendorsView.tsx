@@ -16,6 +16,7 @@ interface VendorsViewProps {
   ingredients: Ingredient[];
   onSaveVendor: (vendor: Vendor) => void;
   onDeleteVendor: (vendorId: string) => void;
+  onAddIngredientForVendor: (vendorId: string) => void;
 }
 
 interface VendorCardProps {
@@ -23,9 +24,10 @@ interface VendorCardProps {
     ingredients: Ingredient[];
     onEdit: (vendor: Vendor) => void;
     onDelete: (vendorId: string) => void;
+    onAddIngredient: (vendorId: string) => void;
 }
 
-const VendorCard: React.FC<VendorCardProps> = ({ vendor, ingredients, onEdit, onDelete }) => {
+const VendorCard: React.FC<VendorCardProps> = ({ vendor, ingredients, onEdit, onDelete, onAddIngredient }) => {
     
     const getInitials = (name: string) => {
         const parts = name.split(' ');
@@ -98,10 +100,13 @@ const VendorCard: React.FC<VendorCardProps> = ({ vendor, ingredients, onEdit, on
                     Total Value: <span className="font-bold text-gray-200">${totalValue.toFixed(2)}</span>
                 </p>
                 <div className="flex items-center space-x-2">
-                    <button onClick={() => onEdit(vendor)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md">
+                    <button onClick={() => onAddIngredient(vendor.id)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md" title="Add Ingredient">
+                        <PlusIcon className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => onEdit(vendor)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md" title="Edit Supplier">
                         <PencilSquareIcon className="w-4 h-4" />
                     </button>
-                    <button onClick={() => onDelete(vendor.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/50 rounded-md">
+                    <button onClick={() => onDelete(vendor.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/50 rounded-md" title="Delete Supplier">
                         <TrashIcon className="w-4 h-4" />
                     </button>
                 </div>
@@ -213,7 +218,7 @@ const AddVendorModal: React.FC<{
     );
 };
 
-export const VendorsView: React.FC<VendorsViewProps> = ({ vendors, ingredients, onSaveVendor, onDeleteVendor }) => {
+export const VendorsView: React.FC<VendorsViewProps> = ({ vendors, ingredients, onSaveVendor, onDeleteVendor, onAddIngredientForVendor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [vendorToEdit, setVendorToEdit] = useState<Vendor | null>(null);
 
@@ -275,6 +280,7 @@ export const VendorsView: React.FC<VendorsViewProps> = ({ vendors, ingredients, 
                     ingredients={suppliedIngredients}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onAddIngredient={onAddIngredientForVendor}
                   />
               )
           })}

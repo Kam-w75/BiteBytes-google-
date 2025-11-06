@@ -8,6 +8,7 @@ interface AddIngredientViewProps {
     onSave: (ingredient: Partial<Ingredient>) => void;
     vendors: Vendor[];
     ingredientToEdit?: Ingredient | null;
+    preselectedVendorId?: string | null;
 }
 
 const emptyIngredient: Omit<Ingredient, 'id' | 'usedInRecipes'> = {
@@ -20,8 +21,15 @@ const emptyIngredient: Omit<Ingredient, 'id' | 'usedInRecipes'> = {
 
 const allCategories: IngredientCategory[] = ['Meat', 'Produce', 'Dairy', 'Dry Goods', 'Spices', 'Canned', 'Beverages', 'Other'];
 
-export const AddIngredientView: React.FC<AddIngredientViewProps> = ({ onBack, onSave, vendors, ingredientToEdit }) => {
-    const [ingredient, setIngredient] = useState(ingredientToEdit || emptyIngredient);
+export const AddIngredientView: React.FC<AddIngredientViewProps> = ({ onBack, onSave, vendors, ingredientToEdit, preselectedVendorId }) => {
+    const [ingredient, setIngredient] = useState(() => {
+        if (ingredientToEdit) return ingredientToEdit;
+        const newIngredient = { ...emptyIngredient };
+        if (preselectedVendorId) {
+            newIngredient.vendorId = preselectedVendorId;
+        }
+        return newIngredient;
+    });
     const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
     const [suggestionError, setSuggestionError] = useState('');
 
@@ -100,7 +108,14 @@ export const AddIngredientView: React.FC<AddIngredientViewProps> = ({ onBack, on
 
                  <div>
                     <label htmlFor="vendor" className="block text-sm font-medium text-gray-300">Supplier</label>
-                    <select id="vendor" value={ingredient.vendorId} onChange={e => handleChange('vendorId', e.target.value)} required className="mt-1 w-full bg-transparent border-[#444444] rounded-md">
+                    <select 
+                        id="vendor" 
+                        value={ingredient.vendorId} 
+                        onChange={e => handleChange('vendorId', e.target.value)} 
+                        required 
+                        disabled={!!preselectedVendorId}
+                        className="mt-1 w-full bg-transparent border-[#444444] rounded-md disabled:bg-gray-700/50 disabled:cursor-not-allowed"
+                    >
                         <option value="">Select a supplier</option>
                         {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                     </select>

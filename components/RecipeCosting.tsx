@@ -58,6 +58,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
     const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
+    const [preselectedVendorId, setPreselectedVendorId] = useState<string | null>(null);
 
     const handleSelectRecipe = useCallback((recipe: Recipe) => {
         setSelectedRecipe(recipe);
@@ -78,6 +79,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
         setSelectedRecipe(null);
         setSelectedMenu(null);
         setSelectedIngredient(null);
+        setPreselectedVendorId(null);
         setActiveFilter(targetFilter);
         setView('list');
     };
@@ -90,6 +92,11 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     }, []);
     const handleAddIngredientClick = () => setView('add-ingredient');
     
+    const handleAddIngredientForVendor = (vendorId: string) => {
+        setPreselectedVendorId(vendorId);
+        setView('add-ingredient');
+    };
+
     const handleEditRecipeClick = (recipe: Recipe) => {
         setSelectedRecipe(recipe);
         setView('edit-recipe');
@@ -135,7 +142,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
              case 'edit-recipe':
                 return <AddRecipeView onBack={handleBack} onSave={handleSaveRecipe} allIngredients={ingredients} recipeToEdit={selectedRecipe} />;
             case 'add-ingredient':
-                return <AddIngredientView onBack={handleBackToList('Ingredients')} onSave={handleSaveIngredient} vendors={vendors} />;
+                return <AddIngredientView onBack={handleBackToList('Ingredients')} onSave={handleSaveIngredient} vendors={vendors} preselectedVendorId={preselectedVendorId} />;
             case 'edit-ingredient':
                 return selectedIngredient && <AddIngredientView onBack={handleBackToList('Ingredients')} onSave={handleSaveIngredient} vendors={vendors} ingredientToEdit={selectedIngredient} />;
             case 'list':
@@ -155,7 +162,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
                     case 'New Purchase Items':
                         return <PurchasesView purchases={purchases} />;
                     case 'Vendors':
-                        return <VendorsView vendors={vendors} ingredients={ingredients} onSaveVendor={onSaveVendor} onDeleteVendor={onDeleteVendor} />;
+                        return <VendorsView vendors={vendors} ingredients={ingredients} onSaveVendor={onSaveVendor} onDeleteVendor={onDeleteVendor} onAddIngredientForVendor={handleAddIngredientForVendor} />;
                     default:
                         return <RecipesView recipes={recipes} allIngredients={ingredients} onSelectRecipe={handleSelectRecipe} onAddRecipeClick={handleAddRecipeClick} />;
                 }

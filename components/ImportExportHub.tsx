@@ -150,23 +150,6 @@ export const ImportExportHub: React.FC<ImportExportHubProps> = ({ ingredients, r
                         </div>
                     </div>
                 </section>
-                
-                <section>
-                    <h2 className="text-2xl font-bold text-gray-100 mb-6">Integrations</h2>
-                    <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444] text-center">
-                        <h3 className="text-lg font-semibold text-gray-200">Direct Integrations Coming Soon!</h3>
-                        <p className="text-sm text-gray-400 mt-2">We're working on connecting directly with your favorite services.</p>
-                        <div className="flex justify-center items-center space-x-8 mt-6">
-                            <div className="flex items-center justify-center h-16 w-32 bg-gray-700 rounded-md text-gray-400 font-bold">Toast</div>
-                            <div className="flex items-center justify-center h-16 w-32 bg-gray-700 rounded-md text-gray-400 font-bold">QuickBooks</div>
-                            <div className="flex items-center justify-center h-16 w-32 bg-gray-700 rounded-md text-gray-400 font-bold">Square</div>
-                        </div>
-                        <button className="mt-8 px-5 py-2 text-sm font-semibold text-black bg-[#FF6B6B] rounded-md shadow-sm hover:bg-[#E85A5A]">
-                            Get notified when available
-                        </button>
-                    </div>
-                </section>
-
             </div>
         </div>
     );
