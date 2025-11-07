@@ -1,0 +1,17 @@
+{
+  "name": "Chef's Edge Recipe Costing",
+  "short_name": "BiteBytes",
+  "description": "A professional recipe costing application for chefs and bakers with integrated voice commands and invoice scanning powered by Gemini Vision.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E1E1E",
+  "theme_color": "#FF6B6B",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
