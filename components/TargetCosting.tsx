@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { CpuChipIcon, WarningIcon } from './Icons';
-import { targetCosts as defaultTargets } from '../data';
+import { TargetCosts } from '../types';
 
 interface SettingsProps {
     onResetData: () => void;
+    targetCosts: TargetCosts;
+    onSaveTargetCosts: (targets: TargetCosts) => void;
 }
 
 const ConfirmationModal: React.FC<{
@@ -50,12 +52,17 @@ const ConfirmationModal: React.FC<{
     );
 };
 
-export const Settings: React.FC<SettingsProps> = ({ onResetData }) => {
-    const [overallTarget, setOverallTarget] = useState(defaultTargets.overall);
-    const [categoryTargets, setCategoryTargets] = useState(defaultTargets.byCategory);
+export const Settings: React.FC<SettingsProps> = ({ onResetData, targetCosts, onSaveTargetCosts }) => {
+    const [overallTarget, setOverallTarget] = useState(targetCosts.overall);
+    const [categoryTargets, setCategoryTargets] = useState(targetCosts.byCategory);
     const [currency, setCurrency] = useState('$');
     const [saved, setSaved] = useState(false);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+    useEffect(() => {
+        setOverallTarget(targetCosts.overall);
+        setCategoryTargets(targetCosts.byCategory);
+    }, [targetCosts]);
 
     const handleCategoryChange = (category: string, value: string) => {
         const numValue = parseInt(value, 10);
@@ -65,10 +72,9 @@ export const Settings: React.FC<SettingsProps> = ({ onResetData }) => {
     };
 
     const handleSave = () => {
-        console.log("Saving settings:", { 
-            overallTarget, 
-            categoryTargets,
-            currency
+        onSaveTargetCosts({
+            overall: overallTarget,
+            byCategory: categoryTargets
         });
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);

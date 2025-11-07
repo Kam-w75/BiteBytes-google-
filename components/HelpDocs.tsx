@@ -1,5 +1,6 @@
 import React from 'react';
 import { Header } from './Header';
+import { ReportIssueForm } from './ReportIssueForm';
 
 const HelpSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="bg-[#2C2C2C] p-6 rounded-lg shadow-sm border border-[#444444]">
@@ -18,6 +19,13 @@ export const HelpDocs: React.FC = () => {
                 subtitle="Your guide to getting the most out of BiteBytes."
             />
             <div className="p-6 max-w-4xl mx-auto space-y-8">
+                <HelpSection title="Report an Issue or Request a Feature">
+                    <p className="mb-4">
+                        We'd love to hear from you! Whether you've found a bug, have an idea for a new feature, or just want to share some feedback, please let us know below. Use the "Enhance with AI" button to help our team understand your request better.
+                    </p>
+                   <ReportIssueForm />
+                </HelpSection>
+
                 <HelpSection title="Step 1: Setting Up Your Ingredients">
                     <p>The foundation of accurate costing is your ingredient list. You need to tell BiteBytes what you pay for each item. There are three ways to do this:</p>
                     <ul>

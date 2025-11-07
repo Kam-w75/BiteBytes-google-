@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Recipe, Ingredient } from '../types';
+import { Recipe, Ingredient, TargetCosts } from '../types';
 import { RecipeListTable } from './RecipeListTable';
 import { RecipeFilterPanel, RecipeFilterState } from './RecipeFilterPanel';
 import { MagnifyingGlassIcon, PlusIcon, AdjustmentsHorizontalIcon } from './Icons';
@@ -9,9 +9,10 @@ interface RecipesViewProps {
   allIngredients: Ingredient[];
   onSelectRecipe: (recipe: Recipe) => void;
   onAddRecipeClick: () => void;
+  targetCosts: TargetCosts;
 }
 
-export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, allIngredients, onSelectRecipe, onAddRecipeClick }) => {
+export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, allIngredients, onSelectRecipe, onAddRecipeClick, targetCosts }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<RecipeFilterState>({ sortBy: 'name', foodCost: 'all' });
@@ -91,7 +92,8 @@ export const RecipesView: React.FC<RecipesViewProps> = ({ recipes, allIngredient
       <RecipeListTable 
         recipes={filteredAndSortedRecipes} 
         allIngredients={allIngredients} 
-        onSelectRecipe={onSelectRecipe} 
+        onSelectRecipe={onSelectRecipe}
+        targetCosts={targetCosts}
       />
       
       <RecipeFilterPanel 

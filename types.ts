@@ -161,3 +161,10 @@ export interface NutritionData {
     protein: string;
     allergens: string[];
 }
+
+export interface TargetCosts {
+    overall: number;
+    byCategory: {
+        [key: string]: number;
+    };
+}

@@ -1,5 +1,5 @@
 // FIX: Import InsightType as a value, as it is an enum used for values, not just a type.
-import type { Recipe, Ingredient, Menu, RecipeBook, Doc, PurchaseItem, Vendor, Insight, PriceChangeEntry } from './types';
+import type { Recipe, Ingredient, Menu, RecipeBook, Doc, PurchaseItem, Vendor, Insight, PriceChangeEntry, TargetCosts } from './types';
 import { InsightType } from './types';
 
 export const vendors: Vendor[] = [
@@ -188,7 +188,7 @@ export const priceChangeHistory: PriceChangeEntry[] = [
     }
 ];
 
-export const targetCosts = {
+export const initialTargetCosts: TargetCosts = {
     overall: 30,
     byCategory: {
         'Entrees': 30,

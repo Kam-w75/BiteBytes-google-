@@ -13,8 +13,8 @@ import { ImportExportHub } from './components/ImportExportHub';
 import { LiveAssistant } from './components/LiveAssistant';
 import { MobileHeader } from './components/MobileHeader';
 import { OrderingView } from './components/OrderingView';
-import { ingredients as initialIngredients, vendors as initialVendors, recipes as initialRecipes } from './data';
-import { Ingredient, Recipe, Vendor } from './types';
+import { ingredients as initialIngredients, vendors as initialVendors, recipes as initialRecipes, initialTargetCosts } from './data';
+import { Ingredient, Recipe, Vendor, TargetCosts } from './types';
 
 export type Page = 'dashboard' | 'costing' | 'ordering' | 'reports' | 'price-history' | 'invoices' | 'nutrition' | 'import-export' | 'settings' | 'help';
 
@@ -59,6 +59,16 @@ const App: React.FC = () => {
       return initialVendors;
     }
   });
+  
+  const [targetCosts, setTargetCosts] = useState<TargetCosts>(() => {
+    try {
+        const saved = window.localStorage.getItem('bitebytes-targetCosts');
+        return saved ? JSON.parse(saved) : initialTargetCosts;
+    } catch (e) {
+        console.error("Could not load target costs from localStorage", e);
+        return initialTargetCosts;
+    }
+  });
 
   useEffect(() => {
     window.localStorage.setItem('bitebytes-ingredients', JSON.stringify(ingredients));
@@ -71,6 +81,10 @@ const App: React.FC = () => {
   useEffect(() => {
     window.localStorage.setItem('bitebytes-vendors', JSON.stringify(vendors));
   }, [vendors]);
+
+  useEffect(() => {
+    window.localStorage.setItem('bitebytes-targetCosts', JSON.stringify(targetCosts));
+  }, [targetCosts]);
 
   // --- Data Handlers ---
   const handleAddNewIngredients = (newIngredientsData: Omit<Ingredient, 'id' | 'usedInRecipes' | 'priceTrend'>[]) => {
@@ -118,6 +132,7 @@ const App: React.FC = () => {
     window.localStorage.removeItem('bitebytes-ingredients');
     window.localStorage.removeItem('bitebytes-recipes');
     window.localStorage.removeItem('bitebytes-vendors');
+    window.localStorage.removeItem('bitebytes-targetCosts');
     // Reload the page to ensure all state is reset cleanly
     window.location.reload();
   };
@@ -133,6 +148,10 @@ const App: React.FC = () => {
 
   const handleCostingStateConsumed = () => {
     setCostingInitialState(null);
+  };
+  
+  const handleSaveTargetCosts = (newTargets: TargetCosts) => {
+    setTargetCosts(newTargets);
   };
 
   const renderPage = () => {
@@ -152,6 +171,7 @@ const App: React.FC = () => {
           onDeleteVendor={handleDeleteVendor}
           initialState={costingInitialState}
           onInitialStateConsumed={handleCostingStateConsumed}
+          targetCosts={targetCosts}
         />;
       case 'ordering':
         return <OrderingView />;
@@ -166,7 +186,7 @@ const App: React.FC = () => {
       case 'import-export':
         return <ImportExportHub ingredients={ingredients} recipes={recipes} vendors={vendors} />;
       case 'settings':
-        return <Settings onResetData={handleResetData} />;
+        return <Settings onResetData={handleResetData} targetCosts={targetCosts} onSaveTargetCosts={handleSaveTargetCosts} />;
       case 'help':
         return <HelpDocs />;
       default:

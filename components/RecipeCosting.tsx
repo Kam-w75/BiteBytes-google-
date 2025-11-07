@@ -14,7 +14,7 @@ import { AddRecipeView } from './AddRecipeView';
 import { AddIngredientView } from './AddIngredientView';
 import { MenuDetailView } from './MenuDetailView';
 import { menus, recipeBooks, docs, purchases } from '../data';
-import { Recipe, Menu, Ingredient, Vendor } from '../types';
+import { Recipe, Menu, Ingredient, Vendor, TargetCosts } from '../types';
 
 export type CostingView = 
   | 'list' 
@@ -37,6 +37,7 @@ interface RecipeCostingProps {
     onDeleteVendor: (vendorId: string) => void;
     initialState: CostingInitialState | null;
     onInitialStateConsumed: () => void;
+    targetCosts: TargetCosts;
 }
 
 export const RecipeCosting: React.FC<RecipeCostingProps> = ({ 
@@ -50,7 +51,8 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     onSaveVendor,
     onDeleteVendor,
     initialState,
-    onInitialStateConsumed
+    onInitialStateConsumed,
+    targetCosts,
 }) => {
     const [activeFilter, setActiveFilter] = useState('Ingredients');
     const [view, setView] = useState<CostingView>('list');
@@ -134,7 +136,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
     const renderContent = () => {
         switch (view) {
             case 'recipe-detail':
-                return selectedRecipe && <RecipeDetailView recipe={selectedRecipe} allIngredients={ingredients} onBack={handleBack} onEdit={handleEditRecipeClick} />;
+                return selectedRecipe && <RecipeDetailView recipe={selectedRecipe} allIngredients={ingredients} onBack={handleBack} onEdit={handleEditRecipeClick} targetCosts={targetCosts} />;
             case 'menu-detail':
                 return selectedMenu && <MenuDetailView menu={selectedMenu} recipes={recipes} allIngredients={ingredients} onBack={handleBack} onSelectRecipe={handleSelectRecipe} />;
             case 'add-recipe':
@@ -149,9 +151,9 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
             default:
                 switch (activeFilter) {
                     case 'Recipes':
-                        return <RecipesView recipes={recipes} allIngredients={ingredients} onSelectRecipe={handleSelectRecipe} onAddRecipeClick={handleAddRecipeClick} />;
+                        return <RecipesView recipes={recipes} allIngredients={ingredients} onSelectRecipe={handleSelectRecipe} onAddRecipeClick={handleAddRecipeClick} targetCosts={targetCosts} />;
                     case 'Ingredients':
-                        return <IngredientsView ingredients={ingredients} onAddIngredientClick={handleAddIngredientClick} onSelectIngredient={handleSelectIngredient} />;
+                        return <IngredientsView ingredients={ingredients} recipes={recipes} allIngredients={ingredients} targetCosts={targetCosts} onAddIngredientClick={handleAddIngredientClick} onSelectIngredient={handleSelectIngredient} />;
                     case 'Menus':
                         return <MenusView menus={menus} recipes={recipes} onSelectMenu={handleSelectMenu} />;
                     case 'Recipe Books':
@@ -164,7 +166,7 @@ export const RecipeCosting: React.FC<RecipeCostingProps> = ({
                     case 'Vendors':
                         return <VendorsView vendors={vendors} ingredients={ingredients} onSaveVendor={onSaveVendor} onDeleteVendor={onDeleteVendor} onAddIngredientForVendor={handleAddIngredientForVendor} />;
                     default:
-                        return <RecipesView recipes={recipes} allIngredients={ingredients} onSelectRecipe={handleSelectRecipe} onAddRecipeClick={handleAddRecipeClick} />;
+                        return <RecipesView recipes={recipes} allIngredients={ingredients} onSelectRecipe={handleSelectRecipe} onAddRecipeClick={handleAddRecipeClick} targetCosts={targetCosts} />;
                 }
         }
     };

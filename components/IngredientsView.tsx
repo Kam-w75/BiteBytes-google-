@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-// FIX: Corrected import path for Ingredient type.
-import { Ingredient } from '../types';
-// FIX: Corrected import path for Icons.
+import { Ingredient, Recipe, TargetCosts } from '../types';
 import { PlusIcon, AdjustmentsHorizontalIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon, ArrowRightIcon } from './Icons';
 import { IngredientFilterPanel, FilterState } from './IngredientFilterPanel';
-// FIX: Corrected import path for data.
 import { vendors as mockVendors } from '../data';
 
 interface IngredientsViewProps {
   ingredients: Ingredient[];
+  recipes: Recipe[];
+  allIngredients: Ingredient[];
+  targetCosts: TargetCosts;
   onAddIngredientClick: () => void;
   onSelectIngredient: (ingredient: Ingredient) => void;
 }
@@ -27,35 +27,38 @@ const PriceTrend: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
   );
 };
 
-const StatusDot: React.FC<{ trend?: number }> = ({ trend = 0 }) => {
-  if (trend > 0.1) return <div className="h-2.5 w-2.5 bg-red-500 rounded-full" title="Significant price increase"></div>;
-  if (trend < 0) return <div className="h-2.5 w-2.5 bg-green-500 rounded-full" title="Price decreased"></div>;
-  return null;
-};
-
 interface IngredientCardProps {
     ingredient: Ingredient;
+    isProblem: boolean;
     onSelect: (ingredient: Ingredient) => void;
 }
 
-const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient, onSelect }) => {
+const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient, isProblem, onSelect }) => {
   const vendor = mockVendors.find(v => v.id === ingredient.vendorId);
+  const statusColor = (ingredient.priceTrend || 0) > 0.1 ? 'bg-red-500' : (ingredient.priceTrend || 0) < 0 ? 'bg-green-500' : null;
+  
   return (
-    <div onClick={() => onSelect(ingredient)} className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444] flex flex-col justify-between hover:shadow-lg hover:border-gray-600 transition-all duration-200 cursor-pointer">
+    <div 
+        onClick={() => onSelect(ingredient)} 
+        className={`bg-[#2C2C2C] rounded-lg shadow-sm border border-[#444444] flex flex-col justify-between hover:shadow-lg hover:border-gray-600 transition-all duration-200 cursor-pointer
+        border-t-4 ${isProblem ? 'border-t-red-500' : 'border-t-transparent'}`}
+    >
       <div>
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start p-4 pb-0">
               <h3 className="font-bold text-lg text-gray-100 pr-2">{ingredient.name}</h3>
-              <StatusDot trend={ingredient.priceTrend} />
+              {statusColor && <div className={`h-2.5 w-2.5 ${statusColor} rounded-full`} title={ (ingredient.priceTrend || 0) > 0.1 ? "Significant price increase" : "Price decreased" }></div>}
           </div>
-          <p className="text-2xl font-bold text-gray-100 mt-1">
-              ${ingredient.cost?.toFixed(2)}
-              <span className="text-sm font-normal text-gray-400">/{ingredient.unit}</span>
-          </p>
-          <div className="flex items-center mt-2">
-              <PriceTrend trend={ingredient.priceTrend} />
+          <div className="p-4 pt-1">
+            <p className="text-2xl font-bold text-gray-100">
+                ${ingredient.cost?.toFixed(2)}
+                <span className="text-sm font-normal text-gray-400">/{ingredient.unit}</span>
+            </p>
+            <div className="flex items-center mt-2">
+                <PriceTrend trend={ingredient.priceTrend} />
+            </div>
           </div>
       </div>
-      <div className="mt-4 pt-3 border-t border-gray-700 flex justify-between text-xs text-gray-500">
+      <div className="mt-4 p-4 border-t border-gray-700 flex justify-between text-xs text-gray-500">
           <span>Supplier: <strong className="text-gray-400">{vendor?.name || 'N/A'}</strong></span>
           <span>Used in: <strong className="text-gray-400">{ingredient.usedInRecipes} recipes</strong></span>
       </div>
@@ -70,54 +73,64 @@ const initialFilterState: FilterState = {
     priceChange: 'all'
 };
 
-export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, onAddIngredientClick, onSelectIngredient }) => {
+export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, recipes, allIngredients, targetCosts, onAddIngredientClick, onSelectIngredient }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(initialFilterState);
 
+  const ingredientsMap = useMemo(() => new Map(allIngredients.map(i => [i.id, i])), [allIngredients]);
+
+  const problemIngredientIds = useMemo(() => {
+    const overTargetRecipes = recipes.filter(recipe => {
+        const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ingredientsMap.get(ing.id)?.cost || 0) * ing.quantity, 0);
+        const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
+        const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
+        return foodCostPercent > targetCosts.overall;
+    });
+
+    const problemIds = new Set<string>();
+    overTargetRecipes.forEach(recipe => {
+        const totalCost = recipe.ingredients.reduce((acc, ing) => acc + (ingredientsMap.get(ing.id)?.cost || 0) * ing.quantity, 0);
+        recipe.ingredients.forEach(ing => {
+            const ingredientCost = (ingredientsMap.get(ing.id)?.cost || 0) * ing.quantity;
+            // If an ingredient makes up more than 15% of the cost of an over-budget recipe, flag it.
+            if (totalCost > 0 && (ingredientCost / totalCost) > 0.15) {
+                problemIds.add(ing.id);
+            }
+        });
+    });
+    return problemIds;
+  }, [recipes, ingredientsMap, targetCosts]);
+
+
   const sortedAndFilteredIngredients = useMemo(() => {
     let filtered = [...ingredients];
 
-    // 1. Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(ing => 
-          ing.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(ing => ing.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-    
-    // 2. Filter by categories
     if (activeFilters.categories.length > 0) {
         filtered = filtered.filter(ing => activeFilters.categories.includes(ing.category));
     }
-    
-    // 3. Filter by suppliers
     if (activeFilters.suppliers.length > 0) {
         const selectedVendorIds = mockVendors.filter(v => activeFilters.suppliers.includes(v.name)).map(v => v.id);
         filtered = filtered.filter(ing => ing.vendorId && selectedVendorIds.includes(ing.vendorId));
     }
-
-    // 4. Filter by price change
     if (activeFilters.priceChange === 'increased') {
         filtered = filtered.filter(ing => (ing.priceTrend || 0) > 0);
     } else if (activeFilters.priceChange === 'decreased') {
         filtered = filtered.filter(ing => (ing.priceTrend || 0) < 0);
     }
 
-
-    // 5. Apply sorting
     return filtered.sort((a, b) => {
         switch(activeFilters.sortBy) {
             case 'smart':
-                const costA = a.cost || 0;
-                const costB = b.cost || 0;
-                if (costB > costA) return 1;
-                if (costA > costB) return -1;
-                const trendA = Math.abs(a.priceTrend || 0);
-                const trendB = Math.abs(b.priceTrend || 0);
-                if (trendB > trendA) return 1;
-                if (trendA > trendB) return -1;
-                return a.name.localeCompare(b.name);
+                const isAProblem = problemIngredientIds.has(a.id);
+                const isBProblem = problemIngredientIds.has(b.id);
+                if (isAProblem && !isBProblem) return -1;
+                if (!isAProblem && isBProblem) return 1;
+                return (b.cost || 0) - (a.cost || 0);
             case 'cost':
                 return (b.cost || 0) - (a.cost || 0);
             case 'alpha':
@@ -128,7 +141,7 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
                 return 0;
         }
     });
-  }, [ingredients, searchTerm, activeFilters]);
+  }, [ingredients, searchTerm, activeFilters, problemIngredientIds]);
   
   const highCostItemsCount = useMemo(() => ingredients.filter(i => (i.priceTrend || 0) > 0).length, [ingredients]);
 
@@ -139,7 +152,6 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
 
   return (
     <div>
-      {/* Header */}
       <div className="flex justify-between items-center mb-4 gap-4">
         <div className="relative flex-grow">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
@@ -166,21 +178,19 @@ export const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, o
         </div>
       </div>
 
-      {/* AI Insights Banner */}
       {isBannerVisible && highCostItemsCount > 0 && (
         <div className="relative bg-coral-500/10 border border-[#FF6B6B]/20 text-coral-200 px-4 py-3 rounded-lg text-sm mb-4 flex justify-between items-center">
           <p className="text-[#FFC2C2]">
             <span className="font-bold mr-2">🎯 AI Insight:</span> 
-            {highCostItemsCount} ingredients are costing more than usual. They are prioritized in "Smart Sort".
+            {problemIngredientIds.size} ingredients are driving costs over your target. They are prioritized in "Smart Sort".
           </p>
           <button onClick={() => setIsBannerVisible(false)} className="text-[#FFC2C2] hover:text-white">&times;</button>
         </div>
       )}
 
-      {/* Grid of Ingredient Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {sortedAndFilteredIngredients.map(ing => (
-          <IngredientCard key={ing.id} ingredient={ing} onSelect={onSelectIngredient} />
+          <IngredientCard key={ing.id} ingredient={ing} isProblem={problemIngredientIds.has(ing.id)} onSelect={onSelectIngredient} />
         ))}
         {sortedAndFilteredIngredients.length === 0 && (
             <div className="col-span-full text-center py-12 text-gray-500">

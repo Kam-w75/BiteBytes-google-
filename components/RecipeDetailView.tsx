@@ -1,15 +1,16 @@
-import React, { useState, useMemo } from 'react';
-import { Recipe, Ingredient } from '../types';
+import React, { useState, useMemo, useEffect } from 'react';
+import { GoogleGenAI, Type } from "@google/genai";
+import { Recipe, Ingredient, TargetCosts } from '../types';
 import { 
     ArrowLeftIcon, 
     PencilIcon, 
-    TrashIcon, 
     ArrowUpOnSquareIcon, 
     CpuChipIcon, 
     ChevronDownIcon,
     ChevronUpIcon,
     PlusIcon,
-    PhotoIcon
+    PhotoIcon,
+    ArrowPathIcon
 } from './Icons';
 
 interface RecipeDetailViewProps {
@@ -17,12 +18,13 @@ interface RecipeDetailViewProps {
   allIngredients: Ingredient[];
   onBack: () => void;
   onEdit: (recipe: Recipe) => void;
+  targetCosts: TargetCosts;
 }
 
-const MetricCard: React.FC<{ title: string; value: string; subValue?: string; trend?: string; trendColor?: string; }> = ({ title, value, subValue, trend, trendColor = 'text-gray-400' }) => (
+const MetricCard: React.FC<{ title: string; value: string; subValue?: string; trend?: string; trendColor?: string; valueColor?: string; }> = ({ title, value, subValue, trend, trendColor = 'text-gray-400', valueColor = 'text-gray-100' }) => (
     <div className="bg-[#2C2C2C] p-4 rounded-lg shadow-sm border border-[#444444]">
         <p className="text-sm font-medium text-gray-400">{title}</p>
-        <p className="mt-1 text-2xl font-bold text-gray-100">{value} {subValue && <span className="text-lg font-medium text-gray-400">{subValue}</span>}</p>
+        <p className={`mt-1 text-2xl font-bold ${valueColor}`}>{value} {subValue && <span className="text-lg font-medium text-gray-400">{subValue}</span>}</p>
         {trend && <p className={`mt-1 text-xs font-medium ${trendColor}`}>{trend}</p>}
     </div>
 );
@@ -47,9 +49,15 @@ const CollapsibleSection: React.FC<{ title: string; children: React.ReactNode }>
     );
 };
 
-export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allIngredients, onBack, onEdit }) => {
-  const [instructionsVisible, setInstructionsVisible] = useState(false);
+export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allIngredients, onBack, onEdit, targetCosts }) => {
+  const [targetFoodCost, setTargetFoodCost] = useState(targetCosts.overall);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
+  useEffect(() => {
+    setTargetFoodCost(targetCosts.overall);
+  }, [targetCosts]);
+  
   const ingredientsMap = useMemo(() => 
     new Map(allIngredients.map(i => [i.id, i])), 
     [allIngredients]
@@ -80,14 +88,19 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allI
     const profitPercent = recipe.menuPrice > 0 ? (profitPerServing / recipe.menuPrice) * 100 : 0;
     return { totalCost, costPerServing, foodCostPercent, profitPerServing, profitPercent };
   }, [recipe, recipeIngredientsWithLiveCost]);
+  
+  const targetCostPerServing = recipe.menuPrice * (targetFoodCost / 100);
+  const costReductionNeeded = costPerServing - targetCostPerServing;
 
   const hasHighCostIngredient = recipeIngredientsWithLiveCost.some(ing => (ing.priceTrend || 0) > 0.1);
+  
+  const foodCostColor = foodCostPercent > targetCosts.overall ? 'text-red-400' : 'text-green-400';
 
   const getAiInsight = () => {
-    if (foodCostPercent < 25 && foodCostPercent > 0) {
+    if (foodCostPercent > targetCosts.overall) {
       return { 
-        emoji: '✅', 
-        message: 'This is one of your most profitable items! Consider promoting it on your menu.'
+        emoji: '🔴', 
+        message: `This recipe is over your ${targetCosts.overall}% food cost target. Use the analyzer below to find savings.`
       };
     }
     if (hasHighCostIngredient) {
@@ -97,11 +110,63 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allI
         message: `${expensiveIngredient?.name} price went up ${((expensiveIngredient?.priceTrend || 0) * 100).toFixed(0)}%. You might want to raise the menu price by $${(costPerServing * (expensiveIngredient?.priceTrend || 0)).toFixed(2)}.`
       };
     }
+     if (foodCostPercent < targetCosts.overall - 10 && foodCostPercent > 0) {
+      return { 
+        emoji: '✅', 
+        message: 'This is one of your most profitable items! Consider promoting it on your menu.'
+      };
+    }
     return {
         emoji: '💡',
-        message: 'Switching to 73/27 beef would save $0.40 per burger with minimal taste difference.'
+        message: 'Recipe costs look good and prices are stable. No immediate actions needed.'
     };
   };
+  
+  const handleGetSuggestions = async () => {
+    setIsGenerating(true);
+    setAiSuggestions([]);
+    try {
+        if (!process.env.API_KEY) throw new Error("API key not set");
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        
+        const topIngredients = [...recipeIngredientsWithLiveCost]
+            .sort((a, b) => (b.cost * b.quantity) - (a.cost * a.quantity))
+            .slice(0, 3)
+            .map(ing => ing.name)
+            .join(', ');
+
+        const prompt = `For a professional kitchen making a "${recipe.name}", suggest 3 specific, actionable cost-saving alternatives for these ingredients: ${topIngredients}. Focus on supplier negotiation points, alternative cuts/grades, or different but similar products. Keep each suggestion concise.`;
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        suggestions: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
+                    },
+                    required: ["suggestions"]
+                }
+            }
+        });
+        
+        const result = JSON.parse(response.text);
+        if (result.suggestions && Array.isArray(result.suggestions)) {
+            setAiSuggestions(result.suggestions);
+        }
+
+    } catch (e) {
+        console.error("AI suggestion failed", e);
+        setAiSuggestions(["Sorry, I couldn't generate suggestions at this time."]);
+    } finally {
+        setIsGenerating(false);
+    }
+};
 
   const aiInsight = getAiInsight();
 
@@ -141,7 +206,7 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allI
             <div className="flex-1">
                 <p className="font-semibold text-gray-400">Serving size: Makes {recipe.servings} servings</p>
                 <div className="grid grid-cols-2 gap-4 mt-3">
-                    <MetricCard title="Food Cost %" value={`${foodCostPercent.toFixed(1)}%`} trend="↑ 2% from last month" trendColor="text-red-400"/>
+                    <MetricCard title="Food Cost %" value={`${foodCostPercent.toFixed(1)}%`} valueColor={foodCostColor}/>
                     <MetricCard title="Cost Per Serving" value={`$${costPerServing.toFixed(2)}`}/>
                     <MetricCard title="Menu Price" value={`$${recipe.menuPrice.toFixed(2)}`} />
                     <MetricCard title="Profit Per Serving" value={`$${profitPerServing.toFixed(2)}`} subValue={`(${profitPercent.toFixed(0)}%)`}/>
@@ -207,22 +272,77 @@ export const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, allI
             <p className="text-gray-400 text-sm">Nutrition information is not yet available for this recipe.</p>
         </CollapsibleSection>
 
-        {/* Pricing Strategy */}
+        {/* Target Cost Analyzer */}
         <div className="bg-[#2C2C2C] border border-[#444444] rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-200 mb-3">Pricing Strategy</h3>
-            <div className="space-y-2 text-sm">
-                <div className="flex justify-between p-3 bg-green-900/50 rounded-md">
-                    <span className="font-medium text-green-300">For a 30% food cost, sell for:</span>
-                    <span className="font-bold text-green-200">${(costPerServing / 0.30).toFixed(2)}</span>
+            <h3 className="text-lg font-semibold text-gray-200 mb-3">Target Cost Analyzer</h3>
+            <div className="space-y-4">
+                <div>
+                    <label htmlFor="price-slider" className="block text-sm font-medium text-gray-300">
+                        Set Target Food Cost %: <span className="font-bold text-[#FF6B6B]">{targetFoodCost}%</span>
+                    </label>
+                    <input
+                        id="price-slider"
+                        type="range"
+                        min="15"
+                        max="50"
+                        value={targetFoodCost}
+                        onChange={(e) => setTargetFoodCost(parseInt(e.target.value, 10))}
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-1"
+                    />
                 </div>
-                <div className="flex justify-between p-3 bg-green-900/50 rounded-md">
-                    <span className="font-medium text-green-300">For a $10.00 profit, sell for:</span>
-                    <span className="font-bold text-green-200">${(costPerServing + 10.00).toFixed(2)}</span>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="bg-[#1E1E1E] p-3 rounded-md border border-gray-700">
+                        <p className="text-xs text-gray-400">Target Cost/Serving</p>
+                        <p className="font-bold text-lg text-gray-100">${targetCostPerServing.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-[#1E1E1E] p-3 rounded-md border border-gray-700">
+                        <p className="text-xs text-gray-400">Required Reduction</p>
+                        <p className={`font-bold text-lg ${costReductionNeeded > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            ${costReductionNeeded.toFixed(2)}
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div className="mt-4">
-                <label htmlFor="price-slider" className="block text-sm font-medium text-gray-300">Adjust Target Food Cost %</label>
-                <input id="price-slider" type="range" min="15" max="40" defaultValue="30" className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-1" />
+                {costReductionNeeded > 0 && (
+                    <div>
+                        <h4 className="font-semibold text-gray-300 text-sm">Ingredient Cost Targets</h4>
+                        <p className="text-xs text-gray-500 mb-2">To meet your goal, here are the suggested new costs per unit for each ingredient.</p>
+                        <ul className="space-y-2 text-xs">
+                            {recipeIngredientsWithLiveCost.map(ing => {
+                                const ingredientTotalCost = (ing.cost || 0) * ing.quantity;
+                                if (totalCost === 0) return null; // Avoid division by zero
+                                const ingredientCostContribution = ingredientTotalCost / totalCost;
+                                const ingredientReductionShare = costReductionNeeded * recipe.servings * ingredientCostContribution;
+                                const ingredientTargetTotalCost = ingredientTotalCost - ingredientReductionShare;
+                                const ingredientTargetCostPerUnit = ingredientTargetTotalCost / ing.quantity;
+                                
+                                return (
+                                    <li key={ing.id} className="flex justify-between items-center bg-[#1E1E1E] p-2 rounded">
+                                        <span className="font-medium text-gray-300">{ing.name}</span>
+                                        <div>
+                                            <span className="text-gray-500 line-through mr-2">${(ing.cost || 0).toFixed(2)}</span>
+                                            <span className="font-bold text-[#FF6B6B]">→ ${ingredientTargetCostPerUnit.toFixed(2)}</span>
+                                            <span className="text-gray-400"> / {ing.unit}</span>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                        <div className="mt-4">
+                            <button onClick={handleGetSuggestions} disabled={isGenerating} className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-black bg-[#FF6B6B] hover:bg-[#E85A5A] disabled:bg-gray-500">
+                                {isGenerating ? <ArrowPathIcon className="animate-spin -ml-1 mr-2 h-5 w-5" /> : <CpuChipIcon className="-ml-1 mr-2 h-5 w-5" />}
+                                {isGenerating ? 'Thinking...' : 'Suggest Cost-Saving Alternatives'}
+                            </button>
+                            {aiSuggestions.length > 0 && (
+                                <div className="mt-4 p-3 bg-[#1E1E1E] rounded-md border border-gray-700">
+                                    <h5 className="text-sm font-semibold text-gray-200 mb-2">Gemini's Suggestions:</h5>
+                                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+                                        {aiSuggestions.map((s, i) => <li key={i}>{s}</li>)}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
 

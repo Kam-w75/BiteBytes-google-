@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react';
-import { Recipe, Ingredient } from '../types';
+import { Recipe, Ingredient, TargetCosts } from '../types';
 
 interface RecipeListTableProps {
   recipes: Recipe[];
   allIngredients: Ingredient[];
   onSelectRecipe: (recipe: Recipe) => void;
+  targetCosts: TargetCosts;
 }
 
-export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, allIngredients, onSelectRecipe }) => {
+export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, allIngredients, onSelectRecipe, targetCosts }) => {
   const ingredientsMap = useMemo(() => 
     new Map(allIngredients.map(i => [i.id, i])), 
     [allIngredients]
@@ -35,6 +36,7 @@ export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, allIn
             }, 0);
             const costPerServing = recipe.servings > 0 ? totalCost / recipe.servings : 0;
             const foodCostPercent = recipe.menuPrice > 0 ? (costPerServing / recipe.menuPrice) * 100 : 0;
+            const isOverTarget = foodCostPercent > targetCosts.overall;
             
             return (
               <tr key={recipe.id} className="hover:bg-[#444444] transition-colors duration-150 cursor-pointer" onClick={() => onSelectRecipe(recipe)}>
@@ -42,7 +44,12 @@ export const RecipeListTable: React.FC<RecipeListTableProps> = ({ recipes, allIn
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">{recipe.servings}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">${costPerServing.toFixed(2)}</td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">${recipe.menuPrice.toFixed(2)}</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">{foodCostPercent.toFixed(1)}%</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
+                  <div className="flex items-center">
+                    <div className={`h-2.5 w-2.5 rounded-full mr-2 ${isOverTarget ? 'bg-red-500' : 'bg-green-500'}`} title={isOverTarget ? `Over target (${targetCosts.overall}%)` : `On target (${targetCosts.overall}%)`}></div>
+                    {foodCostPercent.toFixed(1)}%
+                  </div>
+                </td>
                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <span className="text-[#FF6B6B] hover:text-[#E85A5A]">View</span>
                 </td>
